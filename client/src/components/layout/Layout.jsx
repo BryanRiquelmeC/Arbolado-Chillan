@@ -36,8 +36,8 @@ export default function Layout() {
 
       <BotonMenu onClick={() => setMenuAbierto((v) => !v)} />
 
-      <main className="px-4 pt-20 pb-16 sm:px-6 lg:ml-62.5 lg:px-12 lg:pt-10">
-        <div className="mx-auto w-full max-w-280 min-w-0 lg:ml-[clamp(0px,calc((100%-1120px)*.25),140px)]">
+      <main className="px-4 pt-20 pb-16 sm:px-6 lg:ml-62.5 lg:pr-10 lg:pl-0 lg:pt-10 2xl:pr-14 2xl:pl-0">
+        <div className="mx-auto w-full max-w-295 min-w-0">
           <Outlet />
         </div>
       </main>

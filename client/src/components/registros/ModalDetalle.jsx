@@ -4,6 +4,7 @@ import Modal from "../ui/Modal.jsx";
 import Boton from "../ui/Boton.jsx";
 import DetalleRegistro from "./DetalleRegistro.jsx";
 import { TIPOS, manzanaDe, tituloDe } from "../../utils/registros.js";
+import SeguimientoDetalle from "./SeguimientoDetalle.jsx";
 
 export default function ModalDetalle({ registro, onCerrar, onEditar, onPdf }) {
   if (!registro) return null;
@@ -19,7 +20,7 @@ export default function ModalDetalle({ registro, onCerrar, onEditar, onPdf }) {
       pie={
         <>
           <Boton onClick={onCerrar}>Cerrar</Boton>
-          <Boton tamano="sm" icono={Pencil} onClick={() => onEditar(registro)}>
+          <Boton icono={Pencil} onClick={() => onEditar(registro)}>
             Editar
           </Boton>
           <Boton variante="primario" icono={FileDown} onClick={() => onPdf(registro)}>
@@ -28,6 +29,7 @@ export default function ModalDetalle({ registro, onCerrar, onEditar, onPdf }) {
         </>
       }
     >
+      <SeguimientoDetalle registro={registro} />
       <DetalleRegistro registro={registro} />
     </Modal>
   );

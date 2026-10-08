@@ -1,5 +1,5 @@
 /* Menú lateral: marca, navegación y cerrar sesión */
-import { ClipboardList, Folder, House, LayoutGrid, LogOut, Ruler } from "lucide-react";
+import { ClipboardList, House, LayoutGrid, LogOut, Ruler } from "lucide-react";
 import MarcaApp from "./MarcaApp.jsx";
 import ItemMenu from "./ItemMenu.jsx";
 import { sesion } from "../../services/api.js";
@@ -13,8 +13,7 @@ export const MENU = [
     titulo: "Matriz VTA",
     sub: "Evaluación visual del árbol"
   },
-  { a: "/manzanas", icono: LayoutGrid, titulo: "Manzanas", sub: "Árboles por manzana" },
-  { a: "/registros", icono: Folder, titulo: "Registros", sub: "Gestión y reportes" }
+  { a: "/manzanas", icono: LayoutGrid, titulo: "Manzanas", sub: "Registros y reportes" },
 ];
 
 export default function Sidebar({ abierto, onCerrar }) {

@@ -5,7 +5,7 @@ import Inicio from "./pages/Inicio.jsx";
 import Croquis from "./pages/Croquis.jsx";
 import MatrizVTA from "./pages/MatrizVTA.jsx";
 import Manzanas from "./pages/Manzanas.jsx";
-import Registros from "./pages/Registros.jsx";
+
 
 export default function App() {
   return (
@@ -15,7 +15,7 @@ export default function App() {
         <Route path="croquis" element={<Croquis />} />
         <Route path="matriz-vta" element={<MatrizVTA />} />
         <Route path="manzanas" element={<Manzanas />} />
-        <Route path="registros" element={<Registros />} />
+        <Route path="registros" element={<Navigate to="/manzanas" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

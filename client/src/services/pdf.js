@@ -1,3 +1,4 @@
+import { nombreEstado, siguienteDe, terminado } from "../config/seguimiento.js";
 /* =============================================================
    Reportes PDF
    · pdfRegistro(r)   → croquis, Matriz VTA o censo (según tipo)
@@ -22,7 +23,7 @@ import {
 
 const AZUL = [30, 136, 201];
 const FIRMA = { nombre: "Rodolfo Gazmuri Sánchez", cargo: "Certificado en Arbolado Urbano" };
-const PIE = "Sistema Arbolado Urbano · by Victor Bryan Riquelme Cabrera";
+const PIE = "Sistema Arbolado Urbano · by Bryan";
 
 /* ---------- Piezas comunes ---------- */
 
@@ -109,7 +110,8 @@ function fotosPdf(doc, W, y, fotos = []) {
 }
 
 const nombreArchivo = (t) => Importar.slug(t || "sin_direccion").replace(/-/g, "_");
-const subtitulo = (r) => new Date(r._creado).toLocaleString("es-CL");
+const subtitulo = (r) =>
+  `Registro ${r._id.toUpperCase()}  ·  ${new Date(r._creado).toLocaleString("es-CL")}`;
 
 /* ---------- Por tipo ---------- */
 
@@ -129,7 +131,7 @@ async function pdfCroquis(r) {
     );
   }
   fotosPdf(doc, W, y, r.fotos);
-  cerrar(doc, W, `croquis_${nombreArchivo(r.direccion)}.pdf`);
+  cerrar(doc, W, `croquis_${nombreArchivo(r.direccion)}_${r._id}.pdf`);
 }
 
 function pdfEncuesta(r) {
@@ -168,7 +170,7 @@ function pdfEncuesta(r) {
     doc.addImage(dataUrl, "JPEG", 14, y + 7, ancho, alto);
     y += alto + 14;
   }
-  cerrar(doc, W, `matriz_vta_${nombreArchivo(r.direccion)}.pdf`);
+  cerrar(doc, W, `matriz_vta_${nombreArchivo(r.direccion)}_${r._id}.pdf`);
 }
 
 function pdfCenso(r) {
@@ -196,21 +198,7 @@ function pdfCenso(r) {
     );
   }
   y = tabla(doc, y, ["Evaluación completa", ""], r.campos || [], columnaClave);
-  for (const [i, f] of (r.fotos || []).entries()) {
-    const prop = doc.getImageProperties(f.img);
-    const ancho = Math.min(120, W - 28);
-    const alto = (ancho * prop.height) / prop.width;
-    if (y + alto + 10 > 262) {
-      doc.addPage();
-      y = 20;
-    }
-    doc.setTextColor(11, 92, 143);
-    doc.setFont(undefined, "bold");
-    doc.setFontSize(10);
-    doc.text(`Fotografía ${i + 1}${f.nota ? ": " + f.nota : ""}`, 14, y + 4, { maxWidth: W - 28 });
-    doc.addImage(f.img, "JPEG", 14, y + 7, ancho, alto);
-    y += alto + 14;
-  }
+  y = fotosPdf(doc, W, y, r.fotos);
   cerrar(doc, W, `censo_mz${r.manzana}_${Importar.slug(r.id_arbol || r._id)}.pdf`);
 }
 
@@ -239,7 +227,9 @@ export function pdfManzana(manzana, registros) {
       ...Object.entries(TIPOS)
         .map(([k, t]) => [t.nombre, lista.filter((r) => r._tipo === k).length])
         .filter((x) => x[1]),
-      ...contar(lista.map(urgenciaDe)).map(([u, c]) => ["Urgencia: " + u, c])
+      ...contar(lista.map(urgenciaDe)).map(([u, c]) => ["Urgencia: " + u, c]),
+      ...contar(lista.map(nombreEstado)).map(([e, c]) => ["Estado: " + e, c]),
+      ...contar(lista.map(siguienteDe)).map(([e, c]) => [e, c])
     ],
     cantidad
   );
@@ -247,13 +237,14 @@ export function pdfManzana(manzana, registros) {
   tabla(
     doc,
     y,
-    ["N°", "ID / Dirección", "Tipo", "Especie", "Urgencia"],
+    ["N°", "ID / Dirección", "Tipo", "Especie", "Urgencia", "Estado"],
     lista.map((r, i) => [
       r.n_arbol || i + 1,
       [r.id_arbol, r.direccion].filter(Boolean).join("\n") || "—",
       TIPOS[r._tipo]?.nombre || "",
       especieDe(r) || "—",
-      urgenciaDe(r) || "—"
+      urgenciaDe(r) || "—",
+      [nombreEstado(r), r.resultado && terminado(r) ? r.resultado : "", siguienteDe(r)].filter(Boolean).join("\n")
     ]),
     {
       styles: { fontSize: 8, cellPadding: 1.8, lineColor: [207, 227, 242] },

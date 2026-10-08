@@ -1,10 +1,11 @@
 /* Registros en tabla (pantallas grandes) */
 import AccionesRegistro from "./AccionesRegistro.jsx";
 import Resaltar from "./Resaltar.jsx";
-import { DetalleBreve, DireccionRegistro, TipoRegistro } from "./CeldasRegistro.jsx";
+import { DetalleBreve, DireccionRegistro, EstadoRegistro, TipoRegistro } from "./CeldasRegistro.jsx";
+import { terminado } from "../../config/seguimiento.js";
 import { fechaHora, manzanaDe } from "../../utils/registros.js";
 
-const COLUMNAS = ["Fecha", "Tipo", "Dirección", "Manzana", "Detalle"];
+const COLUMNAS = ["Fecha", "Tipo", "Dirección", "Manzana", "Detalle", "Estado"];
 
 export default function TablaRegistros({ registros, q, acciones }) {
   return (
@@ -22,19 +23,25 @@ export default function TablaRegistros({ registros, q, acciones }) {
         </thead>
         <tbody>
           {registros.map((r) => (
-            <tr key={r._id} className="border-b border-borde last:border-0 hover:bg-c5">
+            <tr
+              key={r._id}
+              className={`border-b border-borde last:border-0 hover:bg-c5 ${terminado(r) ? "bg-[#f6fbf8]" : ""}`}
+            >
               <td className="px-4 py-3.5">{fechaHora(r._actualizado || r._creado)}</td>
               <td className="px-4 py-3.5">
                 <TipoRegistro r={r} />
               </td>
-              <td className="px-4 py-3.5">
+              <td className={`px-4 py-3.5 ${terminado(r) ? "text-suave line-through decoration-[#17663a]/60" : ""}`}>
                 <DireccionRegistro r={r} q={q} />
               </td>
               <td className="px-4 py-3.5">
                 <Resaltar texto={manzanaDe(r)} q={q} />
               </td>
-              <td className="px-4 py-3.5 text-[13px] text-[#2b4a63]">
+              <td className={`px-4 py-3.5 text-[13px] text-[#2b4a63] ${terminado(r) ? "opacity-60" : ""}`}>
                 <DetalleBreve r={r} q={q} />
+              </td>
+              <td className="px-4 py-3.5">
+                <EstadoRegistro r={r} onClick={acciones.onEstado} />
               </td>
               <td className="px-4 py-3.5">
                 <AccionesRegistro r={r} {...acciones} />

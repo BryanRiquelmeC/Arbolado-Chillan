@@ -9,6 +9,7 @@ export default function Modal({
   onCerrar,
   pie,
   angosto = false,
+  ancho = "",
   children
 }) {
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function Modal({
       <div
         role="dialog"
         aria-modal="true"
-        className={`flex max-h-[92vh] w-full flex-col rounded-2xl bg-white shadow-2xl ${angosto ? "max-w-md" : "max-w-3xl"}`}
+        className={`flex max-h-[92vh] w-full flex-col rounded-2xl bg-white shadow-2xl ${ancho || (angosto ? "max-w-md" : "max-w-3xl")}`}
       >
         <header
           className={`flex justify-between gap-3 px-6 py-5 ${angosto ? "" : "border-b-2 border-c4"}`}

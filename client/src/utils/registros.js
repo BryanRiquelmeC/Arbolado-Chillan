@@ -1,3 +1,4 @@
+import { resumenEstado } from "../config/seguimiento.js";
 /* =============================================================
    Utilidades comunes para los 3 tipos de registro
    (croquis · Matriz VTA · censo importado)
@@ -21,7 +22,25 @@ export const especieDe = (r) => {
 
 /** Urgencia resumida */
 export const urgenciaDe = (r) =>
-  r._tipo === "censo" ? r.urgencia || "" : (r.p32 || "").split(" (")[0];
+  r._tipo === "censo" ? r.urgencia || "" : categoriaUrgencia(r.p32);
+
+/** Lleva cualquier redacción de urgencia (URG-01…, R-1…, texto libre) a una categoría común */
+export function categoriaUrgencia(t) {
+  const u = String(t || "").toUpperCase();
+  if (!u.trim()) return "";
+  // Primero los códigos (URG-04 dice "Sin Acción Inmediata" y no es emergencia)
+  const codigo = (u.match(/URG-0([1-5])/) || [])[1];
+  if (codigo)
+    return ["EMERGENCIA (Inmediata)", "URGENTE (Corto plazo)", "PROGRAMABLE (30-90 días)", "MONITOREO", "SIN INTERVENCIÓN"][codigo - 1];
+  if (/EMERGENCIA|INMEDIATA|URG-01|R-1/.test(u)) return "EMERGENCIA (Inmediata)";
+  if (/URGENTE|URG-02|R-2/.test(u)) return "URGENTE (Corto plazo)";
+  if (/PROGRAMABLE|30-90|30 A 90|URG-03|R-3/.test(u)) return "PROGRAMABLE (30-90 días)";
+  if (/MONITOREO|URG-04/.test(u)) return "MONITOREO";
+  if (/SIN INTERVENCI|URG-05/.test(u)) return "SIN INTERVENCIÓN";
+  if (/MANTENCI[OÓ]N|C[IÍ]CLICA|R-4/.test(u)) return "MANTENCIÓN CÍCLICA";
+  if (/TOC[OÓ]N|ELIMINAR/.test(u)) return "RETIRO DE TOCÓN / ELIMINAR";
+  return String(t).split(":")[0].trim();
+}
 
 /** Fecha AAAA-MM-DD */
 export const fechaDe = (r) => (r.fecha || r._creado || "").slice(0, 10);
@@ -30,19 +49,23 @@ export const fechaDe = (r) => (r.fecha || r._creado || "").slice(0, 10);
 export const tituloDe = (r) =>
   r.direccion || (r.id_arbol ? `Árbol ${r.id_arbol}` : "Sin dirección");
 
-
-/** Texto para el buscador: solo dirección, manzana, especie y código */
+/** Texto de todo el registro para el buscador */
 export const textoDe = (r) =>
-  [
-    r.direccion,          // dirección (croquis, Matriz VTA y censo)
-    manzanaDe(r),         // manzana
-    especieDe(r),         // especie
-    r.id_arbol,           // código del árbol (censo)
-    r.registro            // código antiguo del croquis, si existe
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+  (
+    Object.entries(r)
+      .filter(([k, v]) => typeof v === "string" && !v.startsWith("data:") && !k.startsWith("_"))
+      .map(([, v]) => v)
+      .join(" ") +
+    " " +
+    (r.campos || []).map((c) => c[1]).join(" ") +
+    " " +
+    urgenciaDe(r) +
+    " " +
+    resumenEstado(r)
+  )
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 
 /** Color según urgencia */
 export const claseUrgencia = (u) =>

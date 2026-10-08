@@ -6,6 +6,8 @@
    ============================================================= */
 const ENCUESTA_COMPLETA = {
   titulo: "Censo Arbolado Urbano 2026 - Matriz VTA",
+  intro:
+    'Instrumento creado por Rodolfo Gazmuri Sánchez para el levantamiento de datos técnicos mediante la metodología de Evaluación Visual del Árbol (VTA - Visual Tree Assessment). Forma parte del Programa "Recambio y Arborización Arbolado Urbano" en el sector de las cuatro avenidas de Chillán, de acuerdo a las funciones asignadas en el Decreto N° 10.614 del 4 de octubre de 2025. Cada registro constituye una inspección visual detallada de la especie, destinada a evaluar su estado general, sanitario y estructural.',
   secciones: [
     {
       titulo: "Identificación del punto",
@@ -16,6 +18,12 @@ const ENCUESTA_COMPLETA = {
           label: "Manzana",
           id: "p1",
           type: "text"
+        },
+        {
+          n: "4",
+          label: "Dirección y coordenadas GPS",
+          id: "direccion",
+          type: "gps"
         },
         {
           n: "2",
@@ -72,12 +80,6 @@ const ENCUESTA_COMPLETA = {
           otros: true,
           id: "p3",
           type: "select"
-        },
-        {
-          n: "4",
-          label: "Direccion y GPS",
-          id: "direccion",
-          type: "gps"
         }
       ]
     },
@@ -497,20 +499,6 @@ const ENCUESTA_COMPLETA = {
           type: "radio"
         },
         {
-          n: "32",
-          label: "Urgencia de Intervención",
-          opts: [
-            "URG-01 (EMERGENCIA / Inmediata - 24 a 48 hrs): Riesgo inminente de falla estructural o colapso (ej. soplado de suelo, grietas cortantes activas, madera muerta colgante grande o inclinación activa sobre blanco expuesto). Requiere aislamiento inmediato del área y tala/poda de seguridad urgente.",
-            "URG-02 (URGENTE / Corto Plazo - < 15 días): Árbol con defectos estructurales graves (cavidades abiertas >40%, ramas secas mayores >15 cm o interferencia severa con media tensión). Requiere intervención técnica a la brevedad.",
-            "URG-03 (PROGRAMABLE / Mediano Plazo - 30 a 90 días): Ejemplar estable con defectos leves a moderados (podas de formación, levante de gálibo, despeje de luminarias o limpieza de copa).",
-            "URG-04 (MONITOREO / Sin Acción Inmediata): Ejemplar con anomalías o síntomas de declinación que no amenazan la estabilidad inmediata. Requiere seguimiento periódico (semestral/anual) según ficha VTA.",
-            "URG-05 (SIN INTERVENCIÓN / Estado Óptimo): Árbol sano, equilibrado y bien emplazado. No requiere acciones de manejo arborícola."
-          ],
-          otros: true,
-          id: "p32",
-          type: "radio"
-        },
-        {
           n: "33",
           label: "Tipo de unión de ramas principales",
           opts: [
@@ -635,6 +623,21 @@ const ENCUESTA_COMPLETA = {
           type: "radio"
         },
         {
+          n: "32",
+          label: "Urgencia de Intervención",
+          opts: [
+            "URG-01 (EMERGENCIA / Inmediata - 24 a 48 hrs): Riesgo inminente de falla estructural o colapso (ej. soplado de suelo, grietas cortantes activas, madera muerta colgante grande o inclinación activa sobre blanco expuesto). Requiere aislamiento inmediato del área y tala/poda de seguridad urgente.",
+            "URG-02 (URGENTE / Corto Plazo - < 15 días): Árbol con defectos estructurales graves (cavidades abiertas >40%, ramas secas mayores >15 cm o interferencia severa con media tensión). Requiere intervención técnica a la brevedad.",
+            "URG-03 (PROGRAMABLE / Mediano Plazo - 30 a 90 días): Ejemplar estable con defectos leves a moderados (podas de formación, levante de gálibo, despeje de luminarias o limpieza de copa).",
+            "URG-04 (MONITOREO / Sin Acción Inmediata): Ejemplar con anomalías o síntomas de declinación que no amenazan la estabilidad inmediata. Requiere seguimiento periódico (semestral/anual) según ficha VTA.",
+            "URG-05 (SIN INTERVENCIÓN / Estado Óptimo): Árbol sano, equilibrado y bien emplazado. No requiere acciones de manejo arborícola."
+          ],
+          otros: true,
+          req: true,
+          id: "p32",
+          type: "radio"
+        },
+        {
           n: "41",
           label: "Fotografía de Detalle del Defecto",
           id: "p41",
@@ -647,8 +650,9 @@ const ENCUESTA_COMPLETA = {
 
 /* =============================================================
    VERSIÓN CORTA DE LA MATRIZ
-   Preguntas que NO se muestran (quedan 28 de 41).
-   Para volver a mostrar una, borrar de esta lista.
+   Preguntas que NO se muestran (quedan 20 de 41: solo las que
+   determinan el riesgo y la decisión sobre el árbol).
+   Para volver a mostrar una, bórrela de esta lista.
    Los registros antiguos conservan sus respuestas.
    ============================================================= */
 export const PREGUNTAS_OCULTAS = [

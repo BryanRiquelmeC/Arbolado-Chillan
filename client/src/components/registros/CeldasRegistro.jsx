@@ -1,7 +1,32 @@
 /* Piezas que muestra cada registro en la tabla y en las tarjetas */
 import Pastilla from "../ui/Pastilla.jsx";
 import Resaltar from "./Resaltar.jsx";
-import { TIPOS, especieDe, tituloDe, urgenciaDe } from "../../utils/registros.js";
+import { TIPOS, claseUrgencia, especieDe, tituloDe, urgenciaDe } from "../../utils/registros.js";
+import { claseEstado, nombreEstado, siguienteDe, terminado } from "../../config/seguimiento.js";
+import { CheckCircle2, ChevronDown } from "lucide-react";
+
+/** Estado del trabajo: Pendiente · En proceso · Terminado (+ lo que sigue) */
+export function EstadoRegistro({ r, onClick }) {
+  const contenido = (
+    <>
+      <Pastilla className={`${claseEstado(r)} ${onClick ? "ring-1 ring-current/25 transition group-hover/estado:ring-current/60" : ""}`}>
+        {terminado(r) && <CheckCircle2 size={12} className="mr-1 inline -mt-0.5" />}
+        {nombreEstado(r)}
+        {onClick && <ChevronDown size={12} className="ml-1 inline -mt-0.5 opacity-70" />}
+      </Pastilla>
+      {siguienteDe(r) && (
+        <span className="mt-1 block text-[12px] font-semibold text-[#17663a]">{siguienteDe(r)}</span>
+      )}
+    </>
+  );
+  return onClick ? (
+    <button type="button" onClick={() => onClick(r)} title="Cambiar estado" className="group/estado cursor-pointer text-left">
+      {contenido}
+    </button>
+  ) : (
+    contenido
+  );
+}
 
 /** Tipo: Croquis · Matriz VTA · Censo */
 export function TipoRegistro({ r }) {
@@ -42,10 +67,11 @@ export function DetalleBreve({ r, q }) {
     <>
       <Resaltar texto={especieDe(r)} q={q} />
       {u && (
-        <>
-          {" "}
-          · <b className="text-c1">{u}</b>
-        </>
+        <div className="mt-1">
+          <Pastilla className={claseUrgencia(u)}>
+            <Resaltar texto={u} q={q} />
+          </Pastilla>
+        </div>
       )}
     </>
   );
