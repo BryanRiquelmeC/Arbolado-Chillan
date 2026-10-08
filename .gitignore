@@ -1,0 +1,23 @@
+# Dependencias y compilados
+node_modules/
+client/dist/
+dev-dist/
+
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Datos (registros reales del censo): nunca al repositorio
+server/data/
+datos/
+*.xlsx
+*.xls
+*.csv
+respaldo_*.json
+
+# Sistema / editores
+.DS_Store
+Thumbs.db
+.vscode/
+*.log

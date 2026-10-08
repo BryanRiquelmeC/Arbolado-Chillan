@@ -1,0 +1,83 @@
+/* =============================================================
+   Estilos globales · Tailwind CSS v4
+   Colores de la app en @theme (se usan como bg-c1, text-c2, etc.)
+   ============================================================= */
+@import "tailwindcss";
+
+@theme {
+  --color-c1: #0b5c8f; /* azul oscuro */
+  --color-c2: #1e88c9; /* azul */
+  --color-c3: #5bb4ea; /* celeste */
+  --color-c4: #d9eefb; /* celeste claro */
+  --color-c5: #f2f9fe; /* celeste muy claro (fondo) */
+  --color-tinta: #16324a; /* texto */
+  --color-suave: #5d7a92; /* texto secundario */
+  --color-borde: #e3ebf2;
+  --color-ok: #16774f;
+  --color-alerta: #9a5b00;
+  --color-peligro: #d64545;
+  --font-sans: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-c5 font-sans text-tinta antialiased;
+  }
+  button,
+  [role="button"],
+  label:has(input[type="radio"]),
+  label:has(input[type="checkbox"]),
+  select {
+    cursor: pointer;
+  }
+}
+
+/* Componentes reutilizables (para no repetir clases largas en JSX) */
+@layer components {
+  .tarjeta {
+    @apply mb-6 rounded-2xl border border-borde bg-white p-5 shadow-[0_1px_2px_rgba(15,61,94,.04),0_6px_20px_rgba(15,61,94,.05)] sm:p-7;
+  }
+  .tarjeta-titulo {
+    @apply mb-5 flex items-center gap-2 border-b-2 border-c4 pb-3 text-[16.5px] font-bold text-c1;
+  }
+  .etiqueta {
+    @apply text-[12.5px] font-semibold tracking-wide text-suave uppercase;
+  }
+  .campo {
+    @apply w-full min-w-0 rounded-[10px] border-[1.5px] border-[#cfe3f2] bg-c5 px-3 py-[11px] text-[14.5px] text-tinta outline-none transition focus:border-c2 focus:bg-white focus:ring-[3px] focus:ring-c4;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-[10px] px-5 py-[11px] text-[14.5px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-[13px];
+  }
+  .btn-primario {
+    @apply bg-c2 text-white hover:bg-c1;
+  }
+  .btn-secundario {
+    @apply border-[1.5px] border-c2 bg-white text-c1 hover:bg-c4;
+  }
+  .btn-peligro {
+    @apply bg-peligro text-white hover:bg-[#b83434];
+  }
+  .btn-borrar {
+    @apply border-[1.5px] border-[#f1c4c4] bg-white text-peligro hover:bg-[#fde8e8];
+  }
+  .grilla {
+    @apply grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-3;
+  }
+  .pastilla {
+    @apply rounded-full px-2.5 py-0.5 text-[12.5px] font-semibold;
+  }
+}
+
+/* Animación del ícono de carga */
+@keyframes gira {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.gira {
+  animation: gira 1s linear infinite;
+}
