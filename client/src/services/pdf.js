@@ -23,7 +23,7 @@ import {
 
 const AZUL = [30, 136, 201];
 const FIRMA = { nombre: "Rodolfo Gazmuri Sánchez", cargo: "Certificado en Arbolado Urbano" };
-const PIE = "Plataforma Arbolado Chillán · by Victor Bryan Riquelme Cabrera";
+const PIE = "by Victor Bryan Riquelme Cabrera";
 
 /* ---------- Piezas comunes ---------- */
 
