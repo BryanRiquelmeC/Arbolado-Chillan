@@ -5,6 +5,13 @@ import Modal from "../ui/Modal.jsx";
 import Boton from "../ui/Boton.jsx";
 import Campo from "../form/Campo.jsx";
 import CampoFotos from "../form/CampoFotos.jsx";
+import CampoGps from "../form/CampoGps.jsx";
+import { PREGUNTAS } from "../../config/encuesta.js";
+import { CENSO_VTA } from "../../config/censoVta.js";
+import PreguntaCenso from "./PreguntaCenso.jsx";
+
+/** Especies de la Matriz VTA (se pueden elegir o escribir otra) */
+const ESPECIES = (PREGUNTAS.find((p) => p.id === "p3")?.opts || []).filter((e) => e !== "Otros");
 
 const URGENCIAS = [
   "",
@@ -95,6 +102,7 @@ export default function ModalEditarCenso({ registro, registros = [], onCerrar, o
   return (
     <Modal
       abierto
+      ancho="max-w-3xl"
       titulo={nuevo ? "Nuevo árbol (censo)" : "Editar registro del censo"}
       subtitulo={nuevo ? "Se agregará a la manzana indicada" : `ID ${d.id_arbol || d._id}`}
       onCerrar={onCerrar}
@@ -119,11 +127,28 @@ export default function ModalEditarCenso({ registro, registros = [], onCerrar, o
             <input className="campo" value={d.id_arbol ?? ""} onChange={(e) => set("id_arbol", e.target.value)} placeholder="Se genera solo, ej: 47-Fresn-048" />
           </Campo>
         )}
-        <Campo etiqueta="Dirección" className="sm:col-span-2">
-          <input className="campo" value={d.direccion ?? ""} onChange={(e) => set("direccion", e.target.value)} />
+        <Campo etiqueta="Dirección y coordenadas GPS" className="sm:col-span-2">
+          {/* CampoGps guarda en "direccion_gps"; el censo usa "gps" */}
+          <CampoGps
+            nombre="direccion"
+            datos={{ direccion: d.direccion, direccion_gps: d.gps }}
+            set={(k, v) => set(k === "direccion_gps" ? "gps" : k, v)}
+          />
         </Campo>
         <Campo etiqueta="Especie" className="sm:col-span-2">
-          <input className="campo" value={d.especie ?? ""} onChange={(e) => set("especie", e.target.value)} />
+          <input
+            className="campo"
+            list="lista-especies"
+            value={d.especie ?? ""}
+            onChange={(e) => set("especie", e.target.value)}
+            placeholder="Elija de la lista o escriba otra"
+            autoComplete="off"
+          />
+          <datalist id="lista-especies">
+            {[...new Set([...ESPECIES, ...registros.map((x) => x.especie).filter(Boolean)])].map((e) => (
+              <option key={e} value={e} />
+            ))}
+          </datalist>
         </Campo>
         <Campo etiqueta="Urgencia">
           <select className="campo" value={d.urgencia ?? ""} onChange={(e) => set("urgencia", e.target.value)}>
@@ -141,6 +166,20 @@ export default function ModalEditarCenso({ registro, registros = [], onCerrar, o
           <textarea rows={2} className="campo" value={d.recomendacion ?? ""} onChange={(e) => set("recomendacion", e.target.value)} />
         </Campo>
       </div>
+
+      {/* Evaluación VTA: mismas preguntas y opciones que la Matriz */}
+      {CENSO_VTA.map((s) => (
+        <section key={s.titulo} className="mt-6">
+          <h3 className="mb-3 border-b border-borde pb-2 text-[13px] font-bold tracking-wide text-c2 uppercase">
+            {s.titulo}
+          </h3>
+          <div className="grilla">
+            {s.preguntas.map((p) => (
+              <PreguntaCenso key={p.id} p={p} d={d} set={set} />
+            ))}
+          </div>
+        </section>
+      ))}
 
       <h3 className="mt-6 mb-3 text-sm font-bold text-c1">
         Datos adicionales ({d.campos.length})
@@ -175,7 +214,8 @@ export default function ModalEditarCenso({ registro, registros = [], onCerrar, o
       <Boton tamano="sm" icono={Plus} className="mt-3" onClick={agregarCampo}>
         Agregar dato
       </Boton>
-            <h3 className="mt-6 mb-3 text-sm font-bold text-c1">
+
+      <h3 className="mt-6 mb-3 text-sm font-bold text-c1">
         Fotografías (opcional{d.fotos?.length ? ` · ${d.fotos.length}` : ""})
       </h3>
       <CampoFotos

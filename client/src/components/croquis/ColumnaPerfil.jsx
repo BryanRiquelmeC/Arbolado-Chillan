@@ -1,6 +1,6 @@
 /* Una franja del perfil (vereda, platabanda o calzada): ancho + material */
 import { Chips, Lista, Numero, Texto } from "../form/Controles.jsx";
-import { MATERIALES, USOS_FRANJA } from "../../config/croquis.js";
+import { MATERIALES, URGENCIAS_EXTRAER, USOS_FRANJA } from "../../config/croquis.js";
 import { PREGUNTAS } from "../../config/encuesta.js";
 
 /** Mismas especies que la Matriz VTA (pregunta "Especies") */
@@ -57,6 +57,7 @@ export default function ColumnaPerfil({ columna, d, set }) {
                   set(columna.especie, "");
                   set(columna.especie + "_otra", "");
                 }
+                if (!v?.includes("Extraer árbol")) set(columna.urgencia, "");
               }}
             />
           </div>
@@ -80,6 +81,16 @@ export default function ColumnaPerfil({ columna, d, set }) {
                   />
                 </div>
               )}
+            </div>
+          )}
+          {d[columna.uso]?.includes("Extraer árbol") && (
+            <div className="mt-2">
+              <Lista
+                vacio="Urgencia de extracción…"
+                opciones={URGENCIAS_EXTRAER}
+                valor={d[columna.urgencia]}
+                onCambiar={(v) => set(columna.urgencia, v)}
+              />
             </div>
           )}
         </div>

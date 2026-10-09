@@ -3,7 +3,7 @@
    · Cada tarjeta abre su manzana con buscador, filtros, paginación (20)
      y acciones PDF · Ver · Editar · Eliminar */
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { FileSpreadsheet, Plus } from "lucide-react";
 import PageHeader from "../components/ui/PageHeader.jsx";
 import Vacio from "../components/ui/Vacio.jsx";
@@ -24,7 +24,19 @@ export default function Manzanas() {
   const { registros, guardarRegistro, guardarVarios, eliminarRegistro, toast, confirmar } = useApp();
   const navegar = useNavigate();
   const [busqueda, setBusqueda] = useState("");
-  const [abierta, setAbierta] = useState(null); // número de la manzana abierta
+  // La manzana abierta va en la dirección (/manzanas?mz=92): así "Volver"
+  // desde el croquis o la Matriz VTA regresa con la misma manzana abierta.
+  const [params, setParams] = useSearchParams();
+  const abierta = params.get("mz");
+  const setAbierta = (m) =>
+    setParams(
+      (p) => {
+        const n = new URLSearchParams(p);
+        m ? n.set("mz", m) : n.delete("mz");
+        return n;
+      },
+      { replace: true }
+    );
   const [verRegistro, setVerRegistro] = useState(null);
   const [editarCenso, setEditarCenso] = useState(null);
   const [importacion, setImportacion] = useState(null);

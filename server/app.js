@@ -11,7 +11,7 @@ import { enviarFoto, revisarMinio } from "./servicios/minio.js";
 const app = express();
 
 app.use(cors());
-app.use(express.json({ limit: "25mb" })); // los registros pueden incluir fotos
+app.use(express.json({ limit: "50mb" })); // los registros pueden incluir fotos
 
 /** Estado del servidor (la app lo usa para saber si puede sincronizar) */
 app.get("/api/salud", (req, res) => res.json({ ok: true, nube: true }));

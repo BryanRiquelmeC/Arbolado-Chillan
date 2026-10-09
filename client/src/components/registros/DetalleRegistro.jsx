@@ -4,12 +4,13 @@ import { ETIQUETAS, GRUPOS } from "../../config/croquis.js";
 import DibujoCroquis from "../croquis/DibujoCroquis.jsx";
 import { fichaCenso, legible } from "../../utils/registros.js";
 import { ICONOS_SECCION } from "../../config/iconos.js";
+import { respuestasCensoVta } from "../../config/censoVta.js";
 
 function Fila({ etiqueta, children }) {
   return (
     <dl className="grid grid-cols-1 gap-1 border-b border-borde py-2.5 text-[14.5px] sm:grid-cols-[minmax(150px,34%)_1fr] sm:gap-4">
       <dt className="font-bold text-c1">{etiqueta}</dt>
-      <dd className="leading-relaxed wrap-break-word">{children}</dd>
+      <dd className="leading-relaxed break-words">{children}</dd>
     </dl>
   );
 }
@@ -38,24 +39,6 @@ function Enlace({ url, texto }) {
   );
 }
 
-/** Fotografías opcionales (croquis y censo) */
-function Fotos({ fotos }) {
-  if (!fotos?.length) return null;
-  return (
-    <>
-      <Seccion>Fotografías ({fotos.length})</Seccion>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {fotos.map((f, i) => (
-          <figure key={i} className="overflow-hidden rounded-xl border border-borde">
-            <img src={f.img} alt={f.nota || `Fotografía ${i + 1}`} className="w-full" />
-            {f.nota && <figcaption className="px-3 py-2 text-[13px]">{f.nota}</figcaption>}
-          </figure>
-        ))}
-      </div>
-    </>
-  );
-}
-
 export default function DetalleRegistro({ registro: r }) {
   if (r._tipo === "croquis") {
     return (
@@ -73,7 +56,19 @@ export default function DetalleRegistro({ registro: r }) {
             ))}
           </div>
         ))}
-        <Fotos fotos={r.fotos} />
+        {r.fotos?.length > 0 && (
+          <>
+            <Seccion>Fotografías ({r.fotos.length})</Seccion>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {r.fotos.map((f, i) => (
+                <figure key={i} className="overflow-hidden rounded-xl border border-borde">
+                  <img src={f.img} alt={f.nota || `Fotografía ${i + 1}`} className="w-full" />
+                  {f.nota && <figcaption className="px-3 py-2 text-[13px]">{f.nota}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          </>
+        )}
       </>
     );
   }
@@ -95,14 +90,36 @@ export default function DetalleRegistro({ registro: r }) {
             <Enlace url={r.fotos_url} texto="Abrir fotografías" />
           </Fila>
         )}
-        <Seccion>Evaluación completa ({r.campos?.length || 0} respuestas)</Seccion>
+        {respuestasCensoVta(r).map(([titulo, filas]) => (
+          <div key={titulo}>
+            <Seccion>{titulo}</Seccion>
+            {filas.map(([k, v]) => (
+              <Fila key={k} etiqueta={k}>
+                {v}
+              </Fila>
+            ))}
+          </div>
+        ))}
+        {r.campos?.length > 0 && <Seccion>Evaluación completa ({r.campos.length} respuestas)</Seccion>}
         {(r.campos || []).map(([k, v], i) => (
           <Fila key={i} etiqueta={k}>
             {v}
           </Fila>
         ))}
-        <Fotos fotos={r.fotos} />
-        <p className="mt-3 text-[13px] text-suave">Origen: {r._origen || "Importación"}</p>
+        {r.fotos?.length > 0 && (
+          <>
+            <Seccion>Fotografías ({r.fotos.length})</Seccion>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {r.fotos.map((f, i) => (
+                <figure key={i} className="overflow-hidden rounded-xl border border-borde">
+                  <img src={f.img} alt={f.nota || `Fotografía ${i + 1}`} className="w-full" />
+                  {f.nota && <figcaption className="px-3 py-2 text-[13px]">{f.nota}</figcaption>}
+                </figure>
+              ))}
+            </div>
+          </>
+        )}
+//         
       </>
     );
   }

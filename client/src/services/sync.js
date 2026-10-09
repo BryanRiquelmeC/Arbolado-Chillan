@@ -9,7 +9,7 @@
 import { api } from "./api.js";
 import * as db from "./db.js";
 
-const LOTE_SUBIDA = 10; // registros por envío (con fotos pueden pesar)
+const LOTE_SUBIDA = 3; // registros por envío (con fotos pueden pesar)
 const LOTE_BAJADA = 50;
 
 /**

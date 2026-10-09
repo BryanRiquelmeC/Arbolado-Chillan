@@ -115,7 +115,7 @@ export function fichaCenso(r) {
     ["N° de árbol", r.n_arbol],
     ["Manzana", r.manzana],
     ["Dirección", r.direccion],
-    ["GPS", r.gps],
+    ["Coordenadas", r.gps],
     ["Especie", r.especie],
     ["Fecha de registro", r.fecha ? new Date(r.fecha + "T12:00").toLocaleDateString("es-CL") : ""],
     ["Urgencia", r.urgencia],

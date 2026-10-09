@@ -90,7 +90,6 @@ const ENCUESTA_COMPLETA = {
         {
           n: "5",
           label: "Altura del Árbol y Criterio de Gálibo",
-          hint: "Dato obtenido en terreno mediante la aplicación TREES. Ingrese el valor numérico en metros (ej: 11.5).",
           id: "p5",
           type: "number",
           unit: "m"

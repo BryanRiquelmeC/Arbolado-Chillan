@@ -1,3 +1,4 @@
+import { respuestasCensoVta } from "../config/censoVta.js";
 import { nombreEstado, siguienteDe, terminado } from "../config/seguimiento.js";
 /* =============================================================
    Reportes PDF
@@ -176,17 +177,17 @@ function pdfEncuesta(r) {
   const valor = (p) => {
     let v = r[p.id];
     if (p.type === "photo") {
-      if (v) fotos.push([`${p.n}. ${p.label}`, v]);
+      if (v) fotos.push([p.label, v]);
       return v ? "Ver fotografía adjunta" : "—";
     }
     if (v === "Otros" && r[p.id + "_otro"]) v = "Otros: " + r[p.id + "_otro"];
-    if (p.type === "gps" && r[p.id + "_gps"]) v = (v || "") + "  ·  GPS: " + r[p.id + "_gps"];
+    if (p.type === "gps" && r[p.id + "_gps"]) v = (v || "") + "  ·  Coordenadas: " + r[p.id + "_gps"];
     return legible(v);
   };
   let y = 36;
   for (const s of ENCUESTA.secciones) {
     const cuerpo = s.preguntas.map((p) => [
-      `${p.n ? p.n + ". " : ""}${p.label}${p.unit ? ` (${p.unit})` : ""}`,
+      `${p.label}${p.unit ? ` (${p.unit})` : ""}`,
       valor(p)
     ]);
     y = tabla(doc, y, [s.titulo, ""], cuerpo, columnaClave);
@@ -219,7 +220,8 @@ function pdfCenso(r) {
       columnaClave
     );
   }
-  y = tabla(doc, y, ["Evaluación completa", ""], r.campos || [], columnaClave);
+  for (const [titulo, filas] of respuestasCensoVta(r)) y = tabla(doc, y, [titulo, ""], filas, columnaClave);
+  if (r.campos?.length) y = tabla(doc, y, ["Evaluación completa", ""], r.campos, columnaClave);
   y = fotosPdf(doc, W, y, r.fotos);
   cerrar(doc, W, `censo_mz${r.manzana}_${Importar.slug(r.id_arbol || r._id)}.pdf`, y);
 }

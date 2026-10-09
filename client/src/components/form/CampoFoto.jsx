@@ -1,8 +1,8 @@
 /* Foto desde la cámara o galería; se comprime antes de guardarla */
 import { Camera, Trash2 } from "lucide-react";
 
-const LADO_MAXIMO = 900;
-const CALIDAD = 0.65;
+const LADO_MAXIMO = 1600;
+const CALIDAD = 0.8;
 
 export function comprimir(archivo) {
   return new Promise((resolve, reject) => {
