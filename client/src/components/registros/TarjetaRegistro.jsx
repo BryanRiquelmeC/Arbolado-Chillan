@@ -7,7 +7,7 @@ import { fechaHora, manzanaDe } from "../../utils/registros.js";
 
 function Dato({ etiqueta, ancho, children }) {
   return (
-    <div className={`min-w-0 break-words ${ancho ? "sm:col-span-2" : ""}`}>
+    <div className={`min-w-0 wrap-break-word ${ancho ? "sm:col-span-2" : ""}`}>
       <p className="text-[11.5px] font-bold tracking-wide text-suave uppercase">{etiqueta}</p>
       <div className="text-sm">{children}</div>
     </div>

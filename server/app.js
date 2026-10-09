@@ -6,6 +6,7 @@ import express from "express";
 import cors from "cors";
 import registros from "./routes/registros.js";
 import { rutasAuth, requiereLogin } from "./auth.js";
+import { enviarFoto, revisarMinio } from "./servicios/minio.js";
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json({ limit: "25mb" })); // los registros pueden incluir fotos
 app.get("/api/salud", (req, res) => res.json({ ok: true, nube: true }));
 
 app.use("/api", rutasAuth);
+app.get("/api/fotos/*ruta", (req, res) => enviarFoto([].concat(req.params.ruta).join("/"), res));
 app.use("/api/registros", requiereLogin, registros);
 
 /** Ruta inexistente dentro de /api */
@@ -28,4 +30,5 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.message || "Error interno" });
 });
 
+revisarMinio();
 export default app;

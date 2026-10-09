@@ -23,7 +23,7 @@ import {
 
 const AZUL = [30, 136, 201];
 const FIRMA = { nombre: "Rodolfo Gazmuri Sánchez", cargo: "Certificado en Arbolado Urbano" };
-const PIE = "Sistema Arbolado Urbano · by Bryan";
+const PIE = "Plataforma Arbolado Chillán · by Victor Bryan Riquelme Cabrera";
 
 /* ---------- Piezas comunes ---------- */
 
@@ -63,8 +63,9 @@ const columnaClave = {
   columnStyles: { 0: { cellWidth: 68, fontStyle: "bold", textColor: [22, 50, 74] } }
 };
 
-function cerrar(doc, W, archivo) {
-  let y = (doc.lastAutoTable?.finalY || 220) + 20;
+function cerrar(doc, W, archivo, yFinal) {
+  // La firma va debajo de lo último que se dibujó (tabla o fotos), nunca encima
+  let y = (yFinal ?? doc.lastAutoTable?.finalY ?? 220) + 20;
   if (y > 250) {
     doc.addPage();
     y = 40;
@@ -89,24 +90,59 @@ function cerrar(doc, W, archivo) {
   doc.save(archivo);
 }
 
-/** Fotografías opcionales al final del PDF (croquis y censo) */
-function fotosPdf(doc, W, y, fotos = []) {
-  for (const [i, f] of fotos.entries()) {
-    const prop = doc.getImageProperties(f.img);
-    const ancho = Math.min(120, W - 28);
-    const alto = (ancho * prop.height) / prop.width;
-    if (y + alto + 10 > 262) {
+/* Fotos en grilla de 2 columnas, tamaño acotado (máx. 70 mm de alto) */
+const FOTO = { columnas: 2, separacion: 6, altoMax: 70 };
+
+function dibujarFotos(doc, W, y, lista) {
+  if (!lista.length) return y;
+  const anchoCelda = (W - 28 - FOTO.separacion * (FOTO.columnas - 1)) / FOTO.columnas;
+  let fila = [];
+  const pintarFila = () => {
+    const medidas = fila.map(([, img]) => {
+      const p = doc.getImageProperties(img);
+      let ancho = anchoCelda;
+      let alto = (ancho * p.height) / p.width;
+      if (alto > FOTO.altoMax) {
+        alto = FOTO.altoMax;
+        ancho = (alto * p.width) / p.height;
+      }
+      return { ancho, alto };
+    });
+    const altoFila = Math.max(...medidas.map((m) => m.alto)) + 12;
+    if (y + altoFila > 262) {
       doc.addPage();
       y = 20;
     }
-    doc.setTextColor(11, 92, 143);
-    doc.setFont(undefined, "bold");
-    doc.setFontSize(10);
-    doc.text(`Fotografía ${i + 1}${f.nota ? ": " + f.nota : ""}`, 14, y + 4, { maxWidth: W - 28 });
-    doc.addImage(f.img, "JPEG", 14, y + 7, ancho, alto);
-    y += alto + 14;
+    fila.forEach(([titulo, img], k) => {
+      const x = 14 + k * (anchoCelda + FOTO.separacion);
+      const { ancho, alto } = medidas[k];
+      doc.setTextColor(11, 92, 143);
+      doc.setFont(undefined, "bold");
+      doc.setFontSize(8.5);
+      const xImg = x + (anchoCelda - ancho) / 2; // foto centrada en su columna
+      // Título centrado justo encima de la foto
+      doc.text(titulo, xImg + ancho / 2, y + 4, { align: "center", maxWidth: anchoCelda });
+      doc.addImage(img, "JPEG", xImg, y + 7, ancho, alto);
+    });
+    y += altoFila;
+    fila = [];
+  };
+  for (const item of lista) {
+    fila.push(item);
+    if (fila.length === FOTO.columnas) pintarFila();
   }
+  if (fila.length) pintarFila();
   return y;
+}
+
+/** Fotografías opcionales al final del PDF (croquis y censo) */
+function fotosPdf(doc, W, y, fotos = []) {
+  return dibujarFotos(
+    doc,
+    W,
+    y,
+    fotos.filter((f) => f?.img).map((f, i) => [`Fotografía ${i + 1}${f.nota ? ": " + f.nota : ""}`, f.img])
+  );
 }
 
 const nombreArchivo = (t) => Importar.slug(t || "sin_direccion").replace(/-/g, "_");
@@ -130,8 +166,8 @@ async function pdfCroquis(r) {
       columnaClave
     );
   }
-  fotosPdf(doc, W, y, r.fotos);
-  cerrar(doc, W, `croquis_${nombreArchivo(r.direccion)}_${r._id}.pdf`);
+  y = fotosPdf(doc, W, y, r.fotos);
+  cerrar(doc, W, `croquis_${nombreArchivo(r.direccion)}_${r._id}.pdf`, y);
 }
 
 function pdfEncuesta(r) {
@@ -155,22 +191,8 @@ function pdfEncuesta(r) {
     ]);
     y = tabla(doc, y, [s.titulo, ""], cuerpo, columnaClave);
   }
-  for (const [titulo, dataUrl] of fotos) {
-    const prop = doc.getImageProperties(dataUrl);
-    const ancho = Math.min(120, W - 28);
-    const alto = (ancho * prop.height) / prop.width;
-    if (y + alto + 10 > 262) {
-      doc.addPage();
-      y = 20;
-    }
-    doc.setTextColor(11, 92, 143);
-    doc.setFont(undefined, "bold");
-    doc.setFontSize(10);
-    doc.text(titulo, 14, y + 4);
-    doc.addImage(dataUrl, "JPEG", 14, y + 7, ancho, alto);
-    y += alto + 14;
-  }
-  cerrar(doc, W, `matriz_vta_${nombreArchivo(r.direccion)}_${r._id}.pdf`);
+  y = dibujarFotos(doc, W, y, fotos);
+  cerrar(doc, W, `matriz_vta_${nombreArchivo(r.direccion)}_${r._id}.pdf`, y);
 }
 
 function pdfCenso(r) {
@@ -199,11 +221,40 @@ function pdfCenso(r) {
   }
   y = tabla(doc, y, ["Evaluación completa", ""], r.campos || [], columnaClave);
   y = fotosPdf(doc, W, y, r.fotos);
-  cerrar(doc, W, `censo_mz${r.manzana}_${Importar.slug(r.id_arbol || r._id)}.pdf`);
+  cerrar(doc, W, `censo_mz${r.manzana}_${Importar.slug(r.id_arbol || r._id)}.pdf`, y);
+}
+
+/** Foto guardada en MinIO ("/api/fotos/…") → data URL (jsPDF solo acepta data URL) */
+async function aDataUrl(src) {
+  if (typeof src !== "string" || !src.startsWith("/api/fotos/")) return src;
+  try {
+    const blob = await (await fetch(src)).blob();
+    return await new Promise((ok) => {
+      const lector = new FileReader();
+      lector.onload = () => ok(lector.result);
+      lector.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+/** Copia del registro con todas sus fotos listas para el PDF */
+async function conFotosLocales(r) {
+  const c = { ...r };
+  for (const campo of ["fotos", "fotos_seguimiento"]) {
+    if (Array.isArray(c[campo]))
+      c[campo] = (await Promise.all(c[campo].map(async (f) => ({ ...f, img: await aDataUrl(f.img) })))).filter((f) => f.img);
+  }
+  for (const [k, v] of Object.entries(c)) {
+    if (typeof v === "string" && v.startsWith("/api/fotos/")) c[k] = await aDataUrl(v);
+  }
+  return c;
 }
 
 /** PDF de un registro según su tipo */
-export async function pdfRegistro(r) {
+export async function pdfRegistro(registro) {
+  const r = await conFotosLocales(registro);
   if (r._tipo === "croquis") return pdfCroquis(r);
   if (r._tipo === "censo") return pdfCenso(r);
   return pdfEncuesta(r);

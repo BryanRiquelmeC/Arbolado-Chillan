@@ -9,6 +9,7 @@
 import { Router } from "express";
 import * as repo from "../repositorios/index.js";
 import { leerIds, leerRegistros } from "../validacion.js";
+import { subirFotosDe } from "../servicios/minio.js";
 
 const router = Router();
 
@@ -27,7 +28,12 @@ router.post(
 
 router.put(
   "/",
-  ruta(async (req, res) => res.json({ guardados: await repo.guardar(leerRegistros(req.body)) }))
+  ruta(async (req, res) => {
+    // Las fotos llegan desde el dispositivo como data URL: se suben a MinIO
+    // y en la base queda solo la ruta.
+    const lista = await Promise.all(leerRegistros(req.body).map(subirFotosDe));
+    res.json({ guardados: await repo.guardar(lista) });
+  })
 );
 
 router.delete(
