@@ -29,7 +29,7 @@ export default function PageHeader({ titulo, subtitulo, children, volver }) {
       {mostrarVolver && <BotonVolver />}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
-          <h2 className="text-[22px] font-bold tracking-tight break-words text-[#0f3d5e] sm:text-[26px]">
+          <h2 className="text-[22px] font-bold tracking-tight wrap-break-word text-[#0f3d5e] sm:text-[26px]">
             {titulo}
           </h2>
           {subtitulo && <p className="mt-1 text-[14.5px] text-suave">{subtitulo}</p>}

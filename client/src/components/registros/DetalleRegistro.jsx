@@ -10,7 +10,7 @@ function Fila({ etiqueta, children }) {
   return (
     <dl className="grid grid-cols-1 gap-1 border-b border-borde py-2.5 text-[14.5px] sm:grid-cols-[minmax(150px,34%)_1fr] sm:gap-4">
       <dt className="font-bold text-c1">{etiqueta}</dt>
-      <dd className="leading-relaxed break-words">{children}</dd>
+      <dd className="leading-relaxed wrap-break-word">{children}</dd>
     </dl>
   );
 }

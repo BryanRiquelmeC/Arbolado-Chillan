@@ -1,6 +1,6 @@
 /* =============================================================
    Servidor
-   · npm run dev  → API en http://localhost:3001 (Vite en 5173)
+   · npm run dev  → API en http://localhost:3007 (Vite en 5173)
    · npm start    → API + app compilada (client/dist) en un solo puerto
    ============================================================= */
 import path from "node:path";
@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import express from "express";
 import app from "./app.js";
 
-const PUERTO = process.env.PORT || 3001;
+const PUERTO = process.env.PORT || 3007;
 const dist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../client/dist");
 
 app.use(express.static(dist));

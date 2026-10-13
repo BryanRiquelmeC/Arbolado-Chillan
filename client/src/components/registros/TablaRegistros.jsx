@@ -9,7 +9,7 @@ const COLUMNAS = ["Fecha", "Tipo", "Dirección", "Manzana", "Detalle", "Estado"]
 
 export default function TablaRegistros({ registros, q, acciones }) {
   return (
-    <div className="tarjeta hidden overflow-hidden p-0 sm:p-0 lg:block">
+    <div className="tarjeta hidden overflow-x-auto p-0 sm:p-0 lg:block">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="bg-c4 text-left text-xs tracking-wide text-c1 uppercase">
@@ -37,7 +37,7 @@ export default function TablaRegistros({ registros, q, acciones }) {
               <td className="px-4 py-3.5">
                 <Resaltar texto={manzanaDe(r)} q={q} />
               </td>
-              <td className={`px-4 py-3.5 text-[13px] text-[#2b4a63] ${terminado(r) ? "opacity-60" : ""}`}>
+              <td className={`max-w-[280px] px-4 py-3.5 text-[13px] text-[#2b4a63] ${terminado(r) ? "opacity-60" : ""}`}>
                 <DetalleBreve r={r} q={q} />
               </td>
               <td className="px-4 py-3.5">

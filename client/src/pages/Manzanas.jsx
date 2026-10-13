@@ -13,6 +13,9 @@ import ModalInformeManzana from "../components/manzanas/ModalInformeManzana.jsx"
 import ModalDetalle from "../components/registros/ModalDetalle.jsx";
 import ModalEditarCenso, { nuevoCenso } from "../components/registros/ModalEditarCenso.jsx";
 import ModalSeguimiento from "../components/registros/ModalSeguimiento.jsx";
+import ModalDuplicados from "../components/manzanas/ModalDuplicados.jsx";
+import { buscarDuplicados, huellaCenso, unirDuplicados } from "../utils/duplicados.js";
+import { Combine } from "lucide-react";
 import { nombreEstado, siguienteDe } from "../config/seguimiento.js";
 import ModalImportacion from "../components/registros/ModalImportacion.jsx";
 import { useApp } from "../context/AppContext.jsx";
@@ -55,6 +58,9 @@ export default function Manzanas() {
   const [verRegistro, setVerRegistro] = useState(null);
   const [editarCenso, setEditarCenso] = useState(null);
   const [importacion, setImportacion] = useState(null);
+  const [verDuplicados, setVerDuplicados] = useState(false);
+  const [uniendo, setUniendo] = useState(false);
+  const duplicados = useMemo(() => buscarDuplicados(registros), [registros]);
   const [estadoDe, setEstadoDe] = useState(null); // registro cuyo estado se cambia
 
   const grupos = useMemo(() => {
@@ -103,14 +109,35 @@ export default function Manzanas() {
   async function importarExcel(archivo) {
     try {
       toast("Leyendo planilla…");
-      const lista = await Importar.leerArchivo(archivo);
-      if (!lista.length) return toast("La planilla no tiene registros reconocibles");
+      const leidos = await Importar.leerArchivo(archivo);
+      if (!leidos.length) return toast("La planilla no tiene registros reconocibles");
+      // Si un árbol ya existe con otro ID (p. ej. importado antes sin ID_Arbol),
+      // se reconoce por manzana + dirección + especie + hora y se actualiza ese.
+      const porId = new Set(registros.map((r) => r._id));
+      const porHuella = new Map(registros.map((r) => [huellaCenso(r), r._id]).filter(([h]) => h));
+      const lista = leidos.map((r) => {
+        if (porId.has(r._id)) return r;
+        const mismo = porHuella.get(huellaCenso(r));
+        return mismo ? { ...r, _id: mismo } : r;
+      });
       const existentes = new Set(registros.map((r) => r._id));
+      const manzanasActuales = new Set(registros.map((r) => manzanaDe(r) || "Sin manzana"));
+      // Por manzana: cuántos árboles nuevos y cuántos se actualizan
+      const grupos = new Map();
+      for (const r of lista) {
+        const g = grupos.get(r.manzana) || { manzana: r.manzana, nuevos: [], actualizados: 0 };
+        if (existentes.has(r._id)) g.actualizados++;
+        else g.nuevos.push(r);
+        grupos.set(r.manzana, g);
+      }
+      const porManzana = [...grupos.values()]
+        .map((g) => ({ ...g, manzanaNueva: !manzanasActuales.has(g.manzana) }))
+        .sort((a, b) => comparar(a.manzana, b.manzana));
       setImportacion({
         archivo: archivo.name,
         lista,
         nuevos: lista.filter((r) => !existentes.has(r._id)).length,
-        porManzana: contar(lista.map((r) => r.manzana)).sort((a, b) => comparar(a[0], b[0]))
+        porManzana
       });
     } catch (e) {
       console.error(e);
@@ -118,9 +145,23 @@ export default function Manzanas() {
     }
   }
 
-  async function confirmarImportacion() {
-    await guardarVarios(importacion.lista);
-    toast(`${importacion.lista.length} registros importados ✔`);
+  async function confirmarImportacion(soloNuevos = false) {
+    // Si el árbol ya existe, se ACTUALIZA con lo del Excel pero se conserva
+    // lo agregado en la app (fotos, estado del trabajo, respuestas VTA, GPS…)
+    // y no se borran datos con celdas vacías del Excel.
+    const existentes = new Map(registros.map((r) => [r._id, r]));
+    const vacio = (v) => v === undefined || v === null || v === "" || (Array.isArray(v) && !v.length);
+    const origen = soloNuevos ? importacion.lista.filter((r) => !existentes.has(r._id)) : importacion.lista;
+    const lista = origen.map((nuevo) => {
+      const antes = existentes.get(nuevo._id);
+      if (!antes) return nuevo;
+      const unido = { ...antes };
+      for (const [k, v] of Object.entries(nuevo)) if (!vacio(v) || vacio(antes[k])) unido[k] = v;
+      unido._creado = antes._creado || nuevo._creado;
+      return unido;
+    });
+    await guardarVarios(lista);
+    toast(`${lista.length} registros importados ✔`);
     setImportacion(null);
   }
 
@@ -155,6 +196,18 @@ export default function Manzanas() {
         value={busqueda}
         onChange={(e) => setBusqueda(e.target.value)}
       />
+
+      {duplicados.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#f2c230] bg-[#fff8db] px-4 py-3 text-[14px]">
+          <span>
+            <b>{duplicados.length}</b> árbol{duplicados.length === 1 ? "" : "es"} aparece{duplicados.length === 1 ? "" : "n"} duplicado
+            {duplicados.length === 1 ? "" : "s"} (importados dos veces).
+          </span>
+          <Boton tamano="sm" icono={Combine} onClick={() => setVerDuplicados(true)}>
+            Revisar y unir
+          </Boton>
+        </div>
+      )}
 
       {!grupos.length && (
         <Vacio>
@@ -212,6 +265,24 @@ export default function Manzanas() {
           await guardarRegistro(r);
           setEstadoDe(null);
           toast(`${nombreEstado(r)}${siguienteDe(r) ? " · " + siguienteDe(r) : ""} ✔`);
+        }}
+      />
+      <ModalDuplicados
+        grupos={verDuplicados ? duplicados : null}
+        uniendo={uniendo}
+        onCerrar={() => setVerDuplicados(false)}
+        onUnir={async () => {
+          setUniendo(true);
+          try {
+            for (const g of duplicados) {
+              await guardarRegistro(unirDuplicados(g));
+              for (const r of g.sobran) await eliminarRegistro(r._id);
+            }
+            toast(`${duplicados.length} duplicados unidos ✔`);
+            setVerDuplicados(false);
+          } finally {
+            setUniendo(false);
+          }
         }}
       />
       <ModalImportacion

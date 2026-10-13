@@ -38,7 +38,7 @@ export const Importar = {
   limpiarValor(v) {
     if (v === null || v === undefined) return "";
     if (v instanceof Date) return v.toISOString().slice(0, 10);
-    let t = String(v).replace(/\p{Extended_Pictographic}|\uFE0F/gu, "").replace(/\s+/g, " ")
+    let t = String(v).replace(/\s+/g, " ").trim();
     if (/^#(NAME|REF|VALUE|N\/A|DIV\/0)/i.test(t)) return "";
     return t.replace(/\s*,\s*$/, "").trim();
   },
@@ -64,7 +64,6 @@ export const Importar = {
       .toLowerCase();
   },
   fechaISO(v) {
-    if (v === null || v === undefined || v === "") return "";
     if (v instanceof Date && !isNaN(v)) return v.toISOString();
     if (typeof v === "number") return new Date(Math.round((v - 25569) * 864e5)).toISOString(); // serial Excel
     const d = new Date(v);
@@ -74,14 +73,32 @@ export const Importar = {
   /* headers: fila de títulos · filas: arreglos de valores · archivo: nombre de origen */
   convertir(headers, filas, archivo = "") {
     const H = headers.map((h) => String(h ?? "").trim());
+    // Encabezado "limpio" para reconocer columnas aunque vengan numeradas o con
+    // tildes/símbolos: "1.- N° de Manzana:" → "n de manzana"
+    const limpiar = (h) =>
+      h
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/^\s*\d+[a-z]?\s*[.\-)]+\s*/, "")
+        .replace(/[^a-z0-9 ]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    const HL = H.map(limpiar);
     const col = (re) => H.findIndex((h) => re.test(h));
+    /** Columna de la manzana: exacta primero; si no, cualquiera que diga "manzana" */
+    const colManzana = () => {
+      const exacta = HL.findIndex((h) => /^(n |numero |n de |numero de )?manzana$/.test(h));
+      if (exacta >= 0) return exacta;
+      return HL.findIndex((h) => /\bmanzana\b/.test(h) && !/sugerid|direcci|observ/.test(h));
+    };
     const c = {
       fecha: col(/^marca temporal$/i),
-      manzana: col(/^manzana$/i),
-      especie: col(/especie$/i),
+      manzana: colManzana(),
+      especie: (() => { const i = col(/especie$/i); return i >= 0 ? i : HL.findIndex((h) => /\bespecies?\b/.test(h) && !/sugerid|plantar/.test(h)); })(),
       dir: col(/direcci[oó]n y gps/i),
-      id: col(/^id_arbol$/i),
-      n: col(/^n° de arbol$/i),
+      id: (() => { const i = col(/^id_arbol$/i); return i >= 0 ? i : HL.findIndex((h) => /^(id|codigo)( de| del)? ?(arbol)?$/.test(h) || /^id arbol$/.test(h)); })(),
+      n: (() => { const i = col(/^n° de arbol$/i); return i >= 0 ? i : HL.findIndex((h) => /^(n|numero|nro)( de| del)? arbol$/.test(h)); })(),
       urg: col(/urgencia de intervenci/i),
       rec: col(/^recomendacion_tecnica$/i),
       fotos: col(/^linck de las fotos$/i),
@@ -94,11 +111,13 @@ export const Importar = {
       if (!f || !f.some((v) => this.limpiarValor(v))) continue;
       const idArbol = val(f, c.id);
       if (!idArbol && !val(f, c.especie) && !val(f, c.dir)) continue;
-      const manzana = (val(f, c.manzana).match(/\d+/) || ["Sin manzana"])[0];
+      // Manzana: de su columna; si viene vacía, del inicio del ID ("49-Fresn-012" → 49)
+      const manzana =
+        (val(f, c.manzana).match(/\d+/) || idArbol.match(/^\s*(\d+)\s*-/)?.slice(1) || ["Sin manzana"])[0];
       const fecha = this.fechaISO(c.fecha >= 0 ? f[c.fecha] : "");
       const campos = [];
       H.forEach((h, i) => {
-        if (!h || this.OMITIR.some((re) => re.test(h))) return;
+        if (!h || i === c.manzana || this.OMITIR.some((re) => re.test(h))) return;
         const v = this.limpiarValor(f[i]);
         if (v && !/^https?:\/\//.test(v)) campos.push([this.limpiarEtiqueta(h), v]);
       });
