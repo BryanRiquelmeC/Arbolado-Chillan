@@ -10,11 +10,11 @@ export default function ConfirmDialog({ datos, onCerrar }) {
       abierto={Boolean(datos)}
       angosto
       titulo={datos?.titulo}
-      onCerrar={() => onCerrar(false)}
+      onCerrar={() => onCerrar(null)} /* X o Esc: ni sí ni no */
       pie={
         <>
           <Boton className="flex-1 sm:min-w-32 sm:flex-none" onClick={() => onCerrar(false)}>
-            Cancelar
+            {datos?.cancelar || "Cancelar"}
           </Boton>
           <Boton
             autoFocus

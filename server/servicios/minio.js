@@ -14,7 +14,7 @@
    ============================================================= */
 import "dotenv/config";
 import { Client } from "minio";
-import { randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 
 /* Acepta los nombres que entregó TI (MINIO_ENDPOINT, MINIO_ACCESS_KEY…)
    y también los anteriores (MINIO_HOST, MINIO_USUARIO…) */
@@ -82,10 +82,13 @@ async function subir(img, ruta) {
   const [cabecera, base64] = img.split(",");
   const tipo = cabecera.match(/data:(.*?);/)?.[1] || "image/jpeg";
   const ext = tipo.includes("png") ? "png" : "jpg";
-  const nombre = `${ruta}-${randomBytes(3).toString("hex")}.${ext}`;
-  await minio.putObject(BUCKET, nombre, Buffer.from(base64, "base64"), undefined, {
-    "Content-Type": tipo
-  });
+  const datos = Buffer.from(base64, "base64");
+  // El nombre sale del CONTENIDO de la foto: la misma foto siempre tiene el
+  // mismo nombre, así que si llega de nuevo (al editar o resincronizar) no se duplica.
+  const huella = createHash("sha1").update(datos).digest("hex").slice(0, 12);
+  const nombre = `${ruta}-${huella}.${ext}`;
+  const yaExiste = await minio.statObject(BUCKET, nombre).then(() => true, () => false);
+  if (!yaExiste) await minio.putObject(BUCKET, nombre, datos, undefined, { "Content-Type": tipo });
   return `/api/fotos/${nombre}`;
 }
 
@@ -102,10 +105,7 @@ export async function subirFotosDe(r) {
     for (const [campo, prefijo] of [["fotos", "foto"], ["fotos_seguimiento", "trabajo"]]) {
       if (!Array.isArray(r[campo])) continue;
       r[campo] = await Promise.all(
-        r[campo].map(async (f, i) => ({
-          ...f,
-          img: await subir(f.img, `${base}/${prefijo}-${String(i + 1).padStart(2, "0")}`)
-        }))
+        r[campo].map(async (f) => ({ ...f, img: await subir(f.img, `${base}/${prefijo}`) }))
       );
     }
     // Fotos sueltas de la Matriz VTA (preguntas tipo foto: p23, p41…)
@@ -129,4 +129,17 @@ export async function enviarFoto(nombre, res) {
   } catch {
     res.status(404).end();
   }
+}
+
+/** Todas las fotos del bucket (para la limpieza de duplicados) */
+export async function listarFotos() {
+  if (!activo) return [];
+  const nombres = [];
+  const flujo = minio.listObjectsV2(BUCKET, "", true);
+  for await (const o of flujo) if (o.name) nombres.push(o.name);
+  return nombres;
+}
+
+export async function borrarFotos(nombres) {
+  if (activo && nombres.length) await minio.removeObjects(BUCKET, nombres);
 }

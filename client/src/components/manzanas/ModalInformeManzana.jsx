@@ -22,7 +22,7 @@ function Bloque({ titulo, children }) {
 }
 
 export default function ModalInformeManzana({ manzana, registros, acciones, onCerrar, onDescargar }) {
-  const vista = useFiltrosRegistros(registros);
+  const vista = useFiltrosRegistros(registros, "", `filtros-manzana-${manzana}`);
   const { filtros, setFiltro } = vista;
 
   const porTipo = Object.entries(TIPOS)
@@ -126,11 +126,11 @@ export default function ModalInformeManzana({ manzana, registros, acciones, onCe
           <select className="campo" value={filtros.orden} onChange={(e) => setFiltro("orden", e.target.value)}>
             <option value="new">Más recientes</option>
             <option value="old">Más antiguos</option>
-            <option value="dir">Dirección A-Z</option>
+            <option value="dir">Dirección A–Z</option>
           </select>
         </Campo>
         <div className="flex items-end">
-          <Boton tamano="sm" icono={X} className="w-full py-2.75" onClick={vista.limpiarFiltros}>
+          <Boton tamano="sm" icono={X} className="w-full py-[11px]" onClick={vista.limpiarFiltros}>
             Limpiar
           </Boton>
         </div>

@@ -32,7 +32,10 @@ router.put(
     // Las fotos llegan desde el dispositivo como data URL: se suben a MinIO
     // y en la base queda solo la ruta.
     const lista = await Promise.all(leerRegistros(req.body).map(subirFotosDe));
-    res.json({ guardados: await repo.guardar(lista) });
+    const guardados = await repo.guardar(lista);
+    // Se devuelven los registros ya con las rutas de MinIO, para que el
+    // dispositivo reemplace su copia local y no vuelva a enviar las fotos.
+    res.json({ guardados, registros: lista });
   })
 );
 

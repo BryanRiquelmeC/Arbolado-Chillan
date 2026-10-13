@@ -23,7 +23,22 @@ import { agruparPorManzana, comparar, contar, manzanaDe, tituloDe } from "../uti
 export default function Manzanas() {
   const { registros, guardarRegistro, guardarVarios, eliminarRegistro, toast, confirmar } = useApp();
   const navegar = useNavigate();
-  const [busqueda, setBusqueda] = useState("");
+  // "Buscar manzana…" se recuerda al volver
+  const [busqueda, setBusquedaEstado] = useState(() => {
+    try {
+      return sessionStorage.getItem("buscar-manzana") || "";
+    } catch {
+      return "";
+    }
+  });
+  const setBusqueda = (v) => {
+    setBusquedaEstado(v);
+    try {
+      sessionStorage.setItem("buscar-manzana", v);
+    } catch {
+      /* nada */
+    }
+  };
   // La manzana abierta va en la dirección (/manzanas?mz=92): así "Volver"
   // desde el croquis o la Matriz VTA regresa con la misma manzana abierta.
   const [params, setParams] = useSearchParams();

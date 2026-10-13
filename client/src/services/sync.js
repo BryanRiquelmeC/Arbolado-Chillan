@@ -9,7 +9,7 @@
 import { api } from "./api.js";
 import * as db from "./db.js";
 
-const LOTE_SUBIDA = 3; // registros por envío (con fotos pueden pesar)
+const LOTE_SUBIDA = 10; // registros por envío (con fotos pueden pesar)
 const LOTE_BAJADA = 50;
 
 /**
@@ -33,21 +33,23 @@ export async function sincronizar(locales) {
   const pendientes = lista.filter((r) => r._pend);
   for (let i = 0; i < pendientes.length; i += LOTE_SUBIDA) {
     const lote = pendientes.slice(i, i + LOTE_SUBIDA);
-    await api.guardar(lote.map(({ _pend, ...r }) => r));
-    const listos = lote.map((r) => ({ ...r, _pend: false }));
+    const resp = await api.guardar(lote.map(({ _pend, ...r }) => r));
+    // El servidor devuelve los registros con las fotos ya en MinIO (rutas en vez
+    // de la imagen): se guardan así en el dispositivo para no reenviarlas.
+    const delServidor = new Map((resp?.registros || []).map((r) => [r._id, r]));
+    const listos = lote.map((r) => ({ ...(delServidor.get(r._id) || r), _pend: false }));
     await db.guardarVarios(listos);
     const ids = new Set(listos.map((r) => r._id));
-    lista = lista.map((r) => (ids.has(r._id) ? { ...r, _pend: false } : r));
+    const porIdListo = new Map(listos.map((r) => [r._id, r]));
+    lista = lista.map((r) => (ids.has(r._id) ? porIdListo.get(r._id) : r));
   }
 
   // 3) Bajada incremental
   const indice = await api.indice();
   const enNube = new Set(indice.map((f) => f.id));
   const porId = new Map(lista.map((r) => [r._id, r]));
-  const ocultos = new Set(db.ocultos());
   const faltan = indice
     .filter((f) => {
-      if (ocultos.has(f.id)) return false; // borrado solo en este dispositivo
       const loc = porId.get(f.id);
       if (!loc) return true;
       if (loc._pend) return false;

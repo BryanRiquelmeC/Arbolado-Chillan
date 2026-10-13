@@ -29,9 +29,30 @@ export const FILTROS_VACIOS = {
 
 const unicos = (lista) => [...new Set(lista.filter(Boolean))].sort(comparar);
 
-export function useFiltrosRegistros(registros, manzanaInicial = "") {
-  const [filtros, setFiltros] = useState({ ...FILTROS_VACIOS, manzana: manzanaInicial });
-  const [pagina, setPagina] = useState(1);
+/* Filtros recordados mientras la app esté abierta (al volver de un croquis, etc.) */
+const leerRecordado = (clave) => {
+  try {
+    return clave ? JSON.parse(sessionStorage.getItem(clave)) : null;
+  } catch {
+    return null;
+  }
+};
+
+export function useFiltrosRegistros(registros, manzanaInicial = "", clave = "") {
+  const recordado = leerRecordado(clave);
+  const [filtros, setFiltros] = useState(
+    recordado?.filtros ? { ...FILTROS_VACIOS, ...recordado.filtros } : { ...FILTROS_VACIOS, manzana: manzanaInicial }
+  );
+  const [pagina, setPagina] = useState(recordado?.pagina || 1);
+
+  useEffect(() => {
+    if (!clave) return;
+    try {
+      sessionStorage.setItem(clave, JSON.stringify({ filtros, pagina }));
+    } catch {
+      /* sin almacenamiento: no es crítico */
+    }
+  }, [clave, filtros, pagina]);
 
   // Si se llega desde "Manzanas → Ver registros"
   useEffect(() => {

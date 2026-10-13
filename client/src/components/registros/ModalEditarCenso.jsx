@@ -1,5 +1,6 @@
 /* Crear o editar un registro de tipo censo (manual o importado desde Excel) */
 import { useEffect, useState } from "react";
+import { useBorrador } from "../../hooks/useBorrador.jsx";
 import { Plus, Save, X } from "lucide-react";
 import Modal from "../ui/Modal.jsx";
 import Boton from "../ui/Boton.jsx";
@@ -56,6 +57,21 @@ export default function ModalEditarCenso({ registro, registros = [], onCerrar, o
     }
   }, [registro]);
 
+  // Borrador automático (se pierde nada si se cierra la app a medio llenar)
+  const borrador = useBorrador({
+    clave: registro ? `censo:${registro._id || "nuevo-" + (registro.manzana || "")}` : "",
+    datos: d,
+    cargar: (x) => setD(x),
+    base: registro ? { ...registro, campos: (registro.campos || []).map((c) => [...c]) } : null,
+    titulo: d ? [d.direccion, d.manzana && `Manzana ${d.manzana}`].filter(Boolean).join(" · ") : "",
+    activo: Boolean(registro && d)
+  });
+
+  const cancelar = async () => {
+    await borrador.borrar();
+    onCerrar();
+  };
+
   if (!registro || !d) return null;
   const nuevo = !!d._nuevo;
 
@@ -94,6 +110,7 @@ export default function ModalEditarCenso({ registro, registros = [], onCerrar, o
         n_arbol: String(n)
       });
     }
+    borrador.borrar(r);
     onGuardar(r);
   }
 
@@ -108,7 +125,7 @@ export default function ModalEditarCenso({ registro, registros = [], onCerrar, o
       onCerrar={onCerrar}
       pie={
         <>
-          <Boton onClick={onCerrar}>Cancelar</Boton>
+          <Boton onClick={cancelar}>Cancelar</Boton>
           <Boton variante="primario" icono={Save} onClick={guardar}>
             {nuevo ? "Guardar árbol" : "Guardar cambios"}
           </Boton>
