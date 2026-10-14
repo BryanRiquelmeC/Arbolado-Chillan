@@ -37,7 +37,7 @@ export default function TablaRegistros({ registros, q, acciones }) {
               <td className="px-4 py-3.5">
                 <Resaltar texto={manzanaDe(r)} q={q} />
               </td>
-              <td className={`max-w-[280px] px-4 py-3.5 text-[13px] text-[#2b4a63] ${terminado(r) ? "opacity-60" : ""}`}>
+              <td className={`max-w-70 px-4 py-3.5 text-[13px] text-[#2b4a63] ${terminado(r) ? "opacity-60" : ""}`}>
                 <DetalleBreve r={r} q={q} />
               </td>
               <td className="px-4 py-3.5">

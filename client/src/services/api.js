@@ -1,7 +1,5 @@
-/* =============================================================
-   Llamadas al servidor Express (/api)
-   Envía el token de sesión en cada petición.
-   ============================================================= */
+import { rutaApi, BASE } from "../utils/rutas.js";
+
 const CLAVE_TOKEN = "sesion";
 
 export const sesion = {
@@ -9,12 +7,12 @@ export const sesion = {
   guardar: (t) => localStorage.setItem(CLAVE_TOKEN, t),
   cerrar: () => {
     localStorage.removeItem(CLAVE_TOKEN);
-    window.location.href = "/";
+    window.location.href = BASE; // "/arbolado/" en el servidor, "/" en el PC
   }
 };
 
 async function pedir(ruta, opciones = {}) {
-  const res = await fetch("/api" + ruta, {
+  const res = await fetch(rutaApi("/api" + ruta), {
     ...opciones,
     headers: {
       "Content-Type": "application/json",

@@ -1,4 +1,4 @@
-/* Punto de entrada de React */
+/* Punto de entrada de React: primero el login, luego la app */
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
@@ -9,10 +9,13 @@ import { sesion } from "./services/api.js";
 import "./index.css";
 
 function Raiz() {
-  const [conSesion, setConSesion] = useState(!!sesion.token());
+  const [conSesion, setConSesion] = useState(Boolean(sesion.token()));
+
   if (!conSesion) return <Login onEntrar={() => setConSesion(true)} />;
+
   return (
-    <BrowserRouter>
+    // basename: "/arbolado" en el servidor, "" en el PC
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
       <AppProvider>
         <App />
       </AppProvider>
