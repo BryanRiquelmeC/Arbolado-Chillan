@@ -11,6 +11,7 @@ import { ENCUESTA } from "../config/encuesta.js";
 import { ETIQUETAS, GRUPOS } from "../config/croquis.js";
 import { croquisPng } from "../utils/croquis.js";
 import { Importar } from "./importar.js";
+import { BASE, urlFoto } from "../utils/rutas.js";
 import {
   TIPOS,
   comparar,
@@ -25,6 +26,67 @@ import {
 const AZUL = [30, 136, 201];
 const FIRMA = { nombre: "Rodolfo Gazmuri Sánchez", cargo: "Certificado en Arbolado Urbano" };
 const PIE = "by Victor Bryan Riquelme Cabrera";
+
+/* Imagen de la firma: client/public/icons/firma.png (PNG con fondo transparente).
+   Se carga una sola vez al abrir la app y queda guardada para usar sin internet.
+   Si el archivo no existe, el PDF sale igual, solo con la línea, nombre y cargo. */
+let FIRMA_IMG = null; // { data, ancho, alto }
+const cargaFirma = (async () => {
+  try {
+    const resp = await fetch(`${BASE}icons/firma.png`);
+    if (!resp.ok) return;
+    const blob = await resp.blob();
+    const data = await new Promise((ok) => {
+      const lector = new FileReader();
+      lector.onload = () => ok(lector.result);
+      lector.readAsDataURL(blob);
+    });
+    const img = new Image();
+    img.src = data;
+    await img.decode();
+    FIRMA_IMG = recortarFirma(img);
+  } catch {
+    FIRMA_IMG = null;
+  }
+})();
+
+/* Quitar el borde vacío (transparente o blanco) alrededor del trazo,
+   para que la firma use todo el recuadro y no se vea chica */
+function recortarFirma(img) {
+  const c = document.createElement("canvas");
+  c.width = img.naturalWidth;
+  c.height = img.naturalHeight;
+  const ctx = c.getContext("2d");
+  ctx.drawImage(img, 0, 0);
+  const { data } = ctx.getImageData(0, 0, c.width, c.height);
+  let x0 = c.width, y0 = c.height, x1 = -1, y1 = -1;
+  for (let y = 0; y < c.height; y++) {
+    for (let x = 0; x < c.width; x++) {
+      const i = (y * c.width + x) * 4;
+      const tinta = data[i + 3] > 40 && data[i] + data[i + 1] + data[i + 2] < 690; // no transparente ni blanco
+      if (tinta) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  }
+  if (x1 < 0) return null; // imagen vacía
+  const m = 4; // pequeño margen
+  x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m);
+  x1 = Math.min(c.width - 1, x1 + m); y1 = Math.min(c.height - 1, y1 + m);
+  const r = document.createElement("canvas");
+  r.width = x1 - x0 + 1;
+  r.height = y1 - y0 + 1;
+  r.getContext("2d").drawImage(c, x0, y0, r.width, r.height, 0, 0, r.width, r.height);
+  return { data: r.toDataURL("image/png"), ancho: r.width, alto: r.height };
+}
+
+/* Recuadro donde va la firma (mm). Ancho máx. 76: va centrada en x = W-52
+   y el margen derecho de fotos y tablas está en W-14 (2 × 38 = 76 mm) */
+const CAJA_FIRMA = { ancho: 74, alto: 48, bajaSobreLinea: 6 };
+
 
 /* ---------- Piezas comunes ---------- */
 
@@ -48,7 +110,8 @@ function documento(titulo, subtitulo) {
 function tabla(doc, y, cabecera, cuerpo, extra = {}) {
   autoTable(doc, {
     startY: y,
-    head: [cabecera],
+    // Si la 2ª columna del encabezado va vacía, el título ocupa todo el ancho (no se corta)
+    head: [cabecera.length === 2 && !cabecera[1] ? [{ content: cabecera[0], colSpan: 2 }] : cabecera],
     body: cuerpo,
     theme: "grid",
     margin: { left: 14, right: 14 },
@@ -66,10 +129,17 @@ const columnaClave = {
 
 function cerrar(doc, W, archivo, yFinal) {
   // La firma va debajo de lo último que se dibujó (tabla o fotos), nunca encima
-  let y = (yFinal ?? doc.lastAutoTable?.finalY ?? 220) + 20;
+  let y = (yFinal ?? doc.lastAutoTable?.finalY ?? 220) + CAJA_FIRMA.alto + 8; // espacio para la firma
   if (y > 250) {
     doc.addPage();
-    y = 40;
+    y = CAJA_FIRMA.alto + 30;
+  }
+  if (FIRMA_IMG) {
+    // La firma llena el recuadro sin deformarse, centrada sobre el nombre
+    const escala = Math.min(CAJA_FIRMA.ancho / FIRMA_IMG.ancho, CAJA_FIRMA.alto / FIRMA_IMG.alto);
+    const w = FIRMA_IMG.ancho * escala;
+    const h = FIRMA_IMG.alto * escala;
+    doc.addImage(FIRMA_IMG.data, "PNG", W - 52 - w / 2, y + CAJA_FIRMA.bajaSobreLinea - h, w, h);
   }
   doc.setDrawColor(11, 92, 143);
   doc.line(W - 90, y, W - 14, y);
@@ -230,7 +300,7 @@ function pdfCenso(r) {
 async function aDataUrl(src) {
   if (typeof src !== "string" || !src.startsWith("/api/fotos/")) return src;
   try {
-    const blob = await (await fetch(src)).blob();
+    const blob = await (await fetch(urlFoto(src))).blob();
     return await new Promise((ok) => {
       const lector = new FileReader();
       lector.onload = () => ok(lector.result);
@@ -256,6 +326,7 @@ async function conFotosLocales(r) {
 
 /** PDF de un registro según su tipo */
 export async function pdfRegistro(registro) {
+  await cargaFirma;
   const r = await conFotosLocales(registro);
   if (r._tipo === "croquis") return pdfCroquis(r);
   if (r._tipo === "censo") return pdfCenso(r);
@@ -263,7 +334,8 @@ export async function pdfRegistro(registro) {
 }
 
 /** Informe resumen de una manzana */
-export function pdfManzana(manzana, registros) {
+export async function pdfManzana(manzana, registros) {
+  await cargaFirma;
   const lista = [...registros].sort(
     (a, b) => (+a.n_arbol || 0) - (+b.n_arbol || 0) || comparar(tituloDe(a), tituloDe(b))
   );

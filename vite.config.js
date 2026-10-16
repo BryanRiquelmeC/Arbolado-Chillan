@@ -1,5 +1,5 @@
 /* Configuración de Vite: React + Tailwind + PWA (funciona sin internet) */
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -7,7 +7,9 @@ import { VitePWA } from "vite-plugin-pwa";
 /* Ruta donde se publica la app:
    · npm run dev   → "/"           (http://localhost:5173/)
    · npm run build → "/arbolado/"  (https://proyectos.municipalidadchillan.cl/arbolado/) */
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, mode }) => {
+  // El proxy apunta al mismo puerto que usa Express (PORT del .env, o 3001)
+  const puertoApi = loadEnv(mode, process.cwd(), "").PORT || 3001;
   const base = process.env.VITE_BASE || (command === "build" ? "/arbolado/" : "/");
   return {
   base,
@@ -16,7 +18,7 @@ export default defineConfig(({ command }) => {
   server: {
     port: 5173,
     // En desarrollo, /api va al servidor Express local
-    proxy: { "/api": "http://localhost:3001" }
+    proxy: { "/api": `http://localhost:${puertoApi}` }
   },
   plugins: [
     react(),
