@@ -63,7 +63,7 @@ export default function TarjetaManzana({ manzana, registros, onInforme, onAgrega
             {contar(registros.map(especieDe))
               .slice(0, 4)
               .map(([e, c]) => (
-                <Pastilla key={e}>
+                <Pastilla key={e} envolver>
                   {e} · {c}
                 </Pastilla>
               ))}
@@ -71,7 +71,7 @@ export default function TarjetaManzana({ manzana, registros, onInforme, onAgrega
           {urgencias.length > 0 && (
             <Grupo titulo="Urgencia de intervención">
               {urgencias.map(([u, c]) => (
-                <Pastilla key={u} className={claseUrgencia(u)}>
+                <Pastilla key={u} envolver className={claseUrgencia(u)}>
                   {u} · {c}
                 </Pastilla>
               ))}
