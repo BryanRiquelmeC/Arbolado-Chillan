@@ -10,7 +10,7 @@ import { pdfRegistro } from "../services/pdf.js";
 import { dispositivo, nuevoId } from "../utils/registros.js";
 
 export function useGuardarFormulario({ tipo, form, validar, preparar = (d) => d, nombre }) {
-  const { guardarRegistro, toast, confirmar } = useApp();
+  const { guardarRegistro, toast, confirmar, registros } = useApp();
   const { state } = useLocation();
   const navegar = useNavigate();
   const [guardando, setGuardando] = useState(false);
@@ -20,10 +20,14 @@ export function useGuardarFormulario({ tipo, form, validar, preparar = (d) => d,
   // Registro que se edita (si se llegó con "Editar"); se fija al abrir la página
   const editando = useRef(state?.registro?._tipo === tipo ? state.registro : null).current;
 
-  // Si se llegó con "Editar", cargar ese registro
+  // Si se llegó con "Editar", cargar ese registro.
+  // Si se llegó con datos para uno nuevo (ej. Matriz desde un croquis), precargarlos.
   useEffect(() => {
     if (state?.registro?._tipo === tipo) {
       cargar(state.registro);
+      navegar(".", { replace: true, state: null });
+    } else if (state?.nuevo) {
+      cargar({ ...state.nuevo });
       navegar(".", { replace: true, state: null });
     }
   }, [state, tipo, cargar, navegar]);
@@ -55,7 +59,7 @@ export function useGuardarFormulario({ tipo, form, validar, preparar = (d) => d,
       form.set("_creado", registro._creado);
       await borrador.borrar({ ...form.datos, _id: registro._id, _creado: registro._creado });
       toast("Registro guardado ✔");
-      if (conPdf) await pdfRegistro(registro);
+      if (conPdf) await pdfRegistro(registro, registros);
     } catch (e) {
       console.error(e);
       toast("⚠ No se pudo guardar en el dispositivo");

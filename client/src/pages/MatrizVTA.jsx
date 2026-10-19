@@ -1,7 +1,9 @@
 /* Matriz VTA (Censo Arbolado Urbano 2026) — se construye desde config/encuesta.js */
 import PageHeader from "../components/ui/PageHeader.jsx";
 import BarraAcciones from "../components/form/BarraAcciones.jsx";
+import IntroVTA from "../components/matriz/IntroVTA.jsx";
 import SeccionVTA from "../components/matriz/SeccionVTA.jsx";
+import VinculoCroquis from "../components/vinculo/VinculoCroquis.jsx";
 import { useFormulario } from "../hooks/useFormulario.js";
 import { useGuardarFormulario } from "../hooks/useGuardarFormulario.jsx";
 import { ENCUESTA, PREGUNTAS } from "../config/encuesta.js";
@@ -25,6 +27,7 @@ export default function MatrizVTA() {
   return (
     <>
       <PageHeader titulo={ENCUESTA.titulo} subtitulo="Los campos con * son obligatorios" />
+      <VinculoCroquis d={d} set={set} />
       {ENCUESTA.secciones.map((s, i) => (
         <SeccionVTA key={s.titulo} seccion={s} indice={i} d={d} set={set} />
       ))}

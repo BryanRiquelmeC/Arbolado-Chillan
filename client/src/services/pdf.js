@@ -12,6 +12,7 @@ import { ETIQUETAS, GRUPOS } from "../config/croquis.js";
 import { croquisPng } from "../utils/croquis.js";
 import { Importar } from "./importar.js";
 import { filasCalculos, fotosDe, respuestaVTA } from "../utils/vta.js";
+import { alertasPunto, puntoDe } from "../utils/vinculo.js";
 import { BASE, urlFoto } from "../utils/rutas.js";
 import {
   TIPOS,
@@ -264,29 +265,32 @@ const fotosTrabajo = (r) =>
 
 /* ---------- Por tipo ---------- */
 
-async function pdfCroquis(r) {
-  const { doc, W } = documento("CROQUIS DE PERFIL VIAL (CORTE TRANSVERSAL)", subtitulo(r));
-  const png = await croquisPng(r);
-  const ancho = W - 28;
-  doc.addImage(png, "PNG", 14, 34, ancho, ancho * 0.3);
-  let y = 34 + ancho * 0.3 + 6;
-  for (const [titulo, ids] of GRUPOS) {
-    y = tabla(
-      doc,
-      y,
-      [titulo, ""],
-      ids.map((id) => [ETIQUETAS[id] || id, legible(r[id])]),
-      columnaClave
-    );
-  }
-  y = tablaEstado(doc, y, r);
-  y = fotosPdf(doc, W, y, r.fotos);
-  y = dibujarFotos(doc, W, y, fotosTrabajo(r));
-  cerrar(doc, W, `croquis_${nombreArchivo(r.direccion)}_${r._id}.pdf`, y);
+/** Banda de título de sección (para el informe combinado) */
+function banda(doc, W, y, texto) {
+  doc.setFillColor(11, 92, 143);
+  doc.roundedRect(14, y, W - 28, 9, 1.5, 1.5, "F");
+  doc.setTextColor(255);
+  doc.setFont(undefined, "bold");
+  doc.setFontSize(11);
+  doc.text(texto, 18, y + 6.2);
+  doc.setFont(undefined, "normal");
+  return y + 14;
 }
 
-function pdfEncuesta(r) {
-  const { doc, W } = documento(ENCUESTA.titulo.toUpperCase(), subtitulo(r));
+/** Croquis: dibujo + tablas. Devuelve la nueva y */
+async function cuerpoCroquis(doc, W, r, y) {
+  const png = await croquisPng(r);
+  const ancho = W - 28;
+  doc.addImage(png, "PNG", 14, y, ancho, ancho * 0.3);
+  y += ancho * 0.3 + 6;
+  for (const [titulo, ids] of GRUPOS) {
+    y = tabla(doc, y, [titulo, ""], ids.map((id) => [ETIQUETAS[id] || id, legible(r[id])]), columnaClave);
+  }
+  return y;
+}
+
+/** Matriz VTA: tablas por sección. Devuelve { y, fotos } */
+function cuerpoEncuesta(doc, W, r, y) {
   const fotos = [];
   const valor = (p) => {
     let v = r[p.id];
@@ -299,17 +303,62 @@ function pdfEncuesta(r) {
     if (p.type === "gps" && r[p.id + "_gps"]) v = (v || "") + "  ·  Coordenadas: " + r[p.id + "_gps"];
     return legible(v);
   };
-  let y = 36;
   for (const s of ENCUESTA.secciones) {
-    const cuerpo = s.preguntas.flatMap((p) => p.type === "calculos" ? filasCalculos(r) : [[
-      `${p.label}${p.unit ? ` (${p.unit})` : ""}`,
-      valor(p)
-    ]]);
+    const cuerpo = s.preguntas.flatMap((p) =>
+      p.type === "calculos" ? filasCalculos(r) : [[`${p.label}${p.unit ? ` (${p.unit})` : ""}`, valor(p)]]
+    );
     y = tabla(doc, y, [s.titulo, ""], cuerpo, columnaClave);
   }
+  return { y, fotos };
+}
+
+async function pdfCroquis(r) {
+  const { doc, W } = documento("CROQUIS DE PERFIL VIAL (CORTE TRANSVERSAL)", subtitulo(r));
+  let y = await cuerpoCroquis(doc, W, r, 34);
   y = tablaEstado(doc, y, r);
+  y = fotosPdf(doc, W, y, r.fotos);
+  y = dibujarFotos(doc, W, y, fotosTrabajo(r));
+  cerrar(doc, W, `croquis_${nombreArchivo(r.direccion)}_${r._id}.pdf`, y);
+}
+
+function pdfEncuesta(r) {
+  const { doc, W } = documento(ENCUESTA.titulo.toUpperCase(), subtitulo(r));
+  const { y: y0, fotos } = cuerpoEncuesta(doc, W, r, 36);
+  let y = tablaEstado(doc, y0, r);
   y = dibujarFotos(doc, W, y, [...fotos, ...fotosTrabajo(r)]);
   cerrar(doc, W, `matriz_vta_${nombreArchivo(r.direccion)}_${r._id}.pdf`, y);
+}
+
+/** Informe combinado de un punto: croquis + Matriz VTA vinculados */
+async function pdfPunto(c, m) {
+  const fecha = new Date(m._creado || c._creado).toLocaleDateString("es-CL");
+  const { doc, W } = documento(
+    "INFORME DEL PUNTO · CROQUIS Y MATRIZ VTA",
+    `${m.direccion || c.direccion || "Sin dirección"}  ·  Manzana ${m.p1 || c.manzana || "—"}  ·  ${fecha}`
+  );
+  // 1) Croquis
+  let y = banda(doc, W, 34, "1. CROQUIS DE PERFIL VIAL (CORTE TRANSVERSAL)");
+  y = await cuerpoCroquis(doc, W, c, y);
+  // 2) Matriz VTA (en hoja nueva)
+  doc.addPage();
+  y = banda(doc, W, 20, "2. EVALUACIÓN DEL ÁRBOL · MATRIZ VTA");
+  const res = cuerpoEncuesta(doc, W, m, y);
+  y = res.y;
+  // 3) Coincidencia entre ambos
+  const alertas = alertasPunto(c, m);
+  y = tabla(
+    doc,
+    y,
+    ["Revisión croquis / Matriz", ""],
+    alertas.length ? alertas.map((a, i) => [`Observación ${i + 1}`, a]) : [["Resultado", "Sin observaciones: los datos coinciden"]],
+    columnaClave
+  );
+  // 4) Estado del trabajo (el que tenga avance; si ninguno, el de la Matriz)
+  y = tablaEstado(doc, y, estadoDe(m) !== "pendiente" || estadoDe(c) === "pendiente" ? m : c);
+  // 5) Fotos de ambos
+  const fotosCroquis = (c.fotos || []).filter((f) => f?.img).map((f, i) => [`Croquis · Foto ${i + 1}${f.nota ? ": " + f.nota : ""}`, f.img]);
+  y = dibujarFotos(doc, W, y, [...fotosCroquis, ...res.fotos, ...fotosTrabajo(c), ...fotosTrabajo(m)]);
+  cerrar(doc, W, `informe_punto_${nombreArchivo(m.direccion || c.direccion)}_${m._id}.pdf`, y);
 }
 
 function pdfCenso(r) {
@@ -372,9 +421,12 @@ async function conFotosLocales(r) {
   return c;
 }
 
-/** PDF de un registro según su tipo */
-export async function pdfRegistro(registro) {
+/** PDF de un registro según su tipo (con `todos` detecta si tiene croquis/Matriz vinculado) */
+export async function pdfRegistro(registro, todos = []) {
   await cargaFirma;
+  // Croquis y Matriz vinculados → un solo informe del punto
+  const { croquis, matriz } = puntoDe(registro, todos);
+  if (croquis && matriz) return pdfPunto(await conFotosLocales(croquis), await conFotosLocales(matriz));
   const r = await conFotosLocales(registro);
   if (r._tipo === "croquis") return pdfCroquis(r);
   if (r._tipo === "censo") return pdfCenso(r);

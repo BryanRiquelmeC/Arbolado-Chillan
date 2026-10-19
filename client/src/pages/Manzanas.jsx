@@ -81,7 +81,7 @@ export default function Manzanas() {
       setVerRegistro(null);
       setEstadoDe(r);
     },
-    onPdf: (r) => pdfRegistro(r),
+    onPdf: (r) => pdfRegistro(r, registros),
     onEditar: (r) => {
       setVerRegistro(null);
       if (r._tipo === "censo") return setEditarCenso(r);

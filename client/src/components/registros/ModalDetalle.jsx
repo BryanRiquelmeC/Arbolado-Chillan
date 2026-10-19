@@ -5,6 +5,7 @@ import Boton from "../ui/Boton.jsx";
 import DetalleRegistro from "./DetalleRegistro.jsx";
 import { TIPOS, manzanaDe, tituloDe } from "../../utils/registros.js";
 import SeguimientoDetalle from "./SeguimientoDetalle.jsx";
+import VinculoDetalle from "../vinculo/VinculoDetalle.jsx";
 
 export default function ModalDetalle({ registro, onCerrar, onEditar, onPdf }) {
   if (!registro) return null;
@@ -30,6 +31,7 @@ export default function ModalDetalle({ registro, onCerrar, onEditar, onPdf }) {
       }
     >
       <SeguimientoDetalle registro={registro} />
+      <VinculoDetalle registro={registro} />
       <DetalleRegistro registro={registro} />
     </Modal>
   );

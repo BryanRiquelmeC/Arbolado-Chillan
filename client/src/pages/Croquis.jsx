@@ -6,6 +6,7 @@ import SeccionRedElectrica from "../components/croquis/SeccionRedElectrica.jsx";
 import SeccionPerfil from "../components/croquis/SeccionPerfil.jsx";
 import SeccionDatosArbol from "../components/croquis/SeccionDatosArbol.jsx";
 import SeccionNotas from "../components/croquis/SeccionNotas.jsx";
+import VinculoMatriz from "../components/vinculo/VinculoMatriz.jsx";
 import { useFormulario } from "../hooks/useFormulario.js";
 import { useGuardarFormulario } from "../hooks/useGuardarFormulario.jsx";
 import { calcularCroquis } from "../utils/croquis.js";
@@ -36,7 +37,7 @@ export default function Croquis() {
   return (
     <>
       <PageHeader
-        titulo="Extracción y plantación de árboles"
+        titulo="Croquis de perfil vial (corte transversal)"
         subtitulo="Los campos con * son obligatorios"
       />
       <SeccionIdentificacion {...props} />
@@ -44,6 +45,7 @@ export default function Croquis() {
       <SeccionPerfil {...props} />
       <SeccionDatosArbol {...props} />
       <SeccionNotas {...props} />
+      <VinculoMatriz d={d} />
       <BarraAcciones onLimpiar={limpiar} onGuardar={guardar} guardando={guardando} />
     </>
   );
