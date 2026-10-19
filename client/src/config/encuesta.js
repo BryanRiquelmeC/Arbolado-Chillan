@@ -142,6 +142,11 @@ const ENCUESTA_COMPLETA = {
           id: "p7",
           type: "number",
           unit: "cm"
+        },
+        {
+          label: "Cálculos biomecánicos · Guía de campo VTA (Mattheck)",
+          id: "calculos",
+          type: "calculos"
         }
       ]
     },
@@ -157,8 +162,6 @@ const ENCUESTA_COMPLETA = {
             "BIO-01 (Leve - Insectos Defoliadores / Succionadores): Presencia de pulgones, conchuelas, escamas o fumagina sin afectación estructural de la copa.",
             "BIO-02 (Leve a Moderado - Hongos Foliares): Manchas foliares, oídio o roya que afectan la estética o la capacidad fotosintética temporal.",
             "BIO-03 (Moderado - Patógenos Corticales / Chancros): Lesiones activas en la corteza, chancros o exsudaciones/gomosis en fuste o ramas principales.",
-            "BIO-04 (Critico - Taladradores / Insectos Xilófagos): Orificios de salida, galerías activas o presencia de aserrín en la base/fuste (daño biomecánico severo a la madera).",
-            "BIO-05 (Critico - Hongos Lignícolas / Basidiomicetes): Presencia de cuerpos fructíferos (orejas de palo, carpóforos) en cuello o fuste; pudrición activa e irreversible de la madera."
           ],
           otros: true,
           id: "p9",
@@ -201,10 +204,7 @@ const ENCUESTA_COMPLETA = {
           label: "Oquedad en Tronco",
           opts: [
             "Ninguna / Superficial: Sin cavidades ni pérdida visible de madera estructural; corteza sana o daño epidérmico sin pudrición.",
-            "OQU-01 (Leve / Monitoreo): Oquedad pequeña o pudrición localizada en fuste/ramas; compromiso menor al 30% de la sección transversal. Requiere seguimiento visual rutinario.",
-            "OQU-02 (Moderado / Intervención Conservadora): Cavidad media en fuste o horqueta principal (30% a 40% de afectación); pared de madera sana remanente suficiente. Requiere reducción de copa para aliviar peso o limpieza de cavidad.",
-            "OQU-03 (Severo / Riesgo Estructural - Tala/Remoción): Cavidad basal profunda, tronco hueco o pudrición que afecta >40% de la circunferencia (o grosor de pared sana <30% del radio del tronco). Exige tala o remoción prioritaria.",
-            "No evaluable / Oquedad no visible: Presencia de cavidad sospechada pero obstruida por hiedra, agua acumulada o escombros."
+            "OQU-03 (Severo / Riesgo Estructural - Tala/Remoción): Cavidad basal profunda, tronco hueco o pudrición extensa con poca pared de madera sana remanente. Exige tala o remoción prioritaria.",
           ],
           otros: true,
           id: "p12",
@@ -215,11 +215,8 @@ const ENCUESTA_COMPLETA = {
           label: "Grietas Estructurales",
           opts: [
             "Ninguna / Fisura Epidérmica: Fuste íntegro; fisuras naturales del ritmo de crecimiento restringidas a la corteza muerta externa.",
-            "GRI-01 (Leve / Monitoreo): Grieta superficial en la madera superficial o cicatriz sellada; sin separación activa del tejido cambial ni exudaciones.",
-            "GRI-02 (Moderado / Intervención de Alivio): Grieta vertical longitudinal en fuste o ramificación codominante sin separación severa; evidencia de esfuerzo por carga estática. Requiere poda de alivio de peso y seguimiento.",
             "GRI-03 (Severo / Riesgo Alto - Remoción o Consolidación): Grieta profunda activa con apertura del tejido interior, pudrición interna asociada o grieta en V en horquilla principal. Compromiso mecánico grave del fuste.",
-            "GRI-04 (Crítico / Falla Inminente - Intervención Urgente): Grietas transversales, radiales múltiples o fractura completa del fuste con desplazamiento. Riesgo de colapso mecánico inminente.",
-            "No evaluable / Oculto: Fuste no visible por presencia de hiedras, protección plástica o interferencias físicas."
+            "GRI-04 (Crítico / Falla Inminente - Intervención Urgente): Grietas transversales, radiales múltiples o fractura completa del fuste con desplazamiento. Riesgo de colapso mecánico inminente."
           ],
           otros: true,
           id: "p13",
@@ -396,16 +393,13 @@ const ENCUESTA_COMPLETA = {
         },
         {
           n: "25",
-          label: "Tipo de Interferencia Eléctrica",
+          label: "Interferencia Eléctrica",
           opts: [
-            "INT-00 (Ninguna / Sin Interferencia): Copa libre; no presenta contacto ni proximidad crítica con tendido aéreo en su radio de expansión.",
-            "INT-01 (Bajo Riesgo - Telecomunicaciones / Corrientes Débiles): Ramas en contacto o envolviendo cables de fibra óptica, televisión o teléfono (bajo riesgo eléctrico, pero potencial fricción/daño a la red).",
-            "INT-02 (Bajo a Moderado - Alumbrado Público): Ramas tapando la difusión luminosa de la luminaria vial o en contacto con el brazo de alumbrado (genera focos de inseguridad nocturna).",
-            "INT-03 (Moderado - Baja Tensión / Red Domiciliaria 220V - 380V): Follaje o ramas en contacto directo con líneas preensambladas o desnudas de BT (requiere poda de despeje).",
-            "INT-04 (Severo - Media Tensión / Red de Distribución 13.2kV - 23kV): Ramas invadiendo la franja de seguridad o tocando líneas de MT. Riesgo crítico de arco eléctrico/incendio; requiere coordinación previa con empresa eléctrica.",
-            "INT-05 (Severo - Interferencia Mixta): Conflicto simultáneo con redes de Media/Baja Tensión y Alumbrado Público o Telecomunicaciones."
+            "Sí: Ramas o follaje en contacto o con proximidad crítica a tendido aéreo. Indique el tipo de red.",
+            "No: Copa libre; sin contacto ni proximidad crítica con tendido aéreo."
           ],
           otros: true,
+          sub: { si: "Sí", campo: "p25_tipo", titulo: "Tipo de red", opciones: ["Domiciliaria", "Alumbrado público"] },
           id: "p25",
           type: "radio"
         },
@@ -415,9 +409,7 @@ const ENCUESTA_COMPLETA = {
           opts: [
             "VIG-01 (Bueno / Vigoroso): Crecimiento apical y brotación acordes a la especie; extensión foliar completa, buena densidad de copa y ausencia de signos de declinación.",
             "VIG-02 (Moderado / Vigor Normal): Crecimiento esperable para la especie y entorno urbano; leve reducción de densidad foliar o brotación adaptativa sin daño estructural.",
-            "VIG-03 (Escaso / En Declinación Leve): Crecimiento apical reducido, presencia de pequeñas ramas secas terminales (muerte descendente inicial) y follaje menos denso.",
             "VIG-04 (Severo / Declinación Avanzada): Pérdida masiva de vigor, presencia de microfilia, brotación epicórmica de emergencia (chupones) y brotes secos dominantes.",
-            "VIG-05 (Critico / Árbol Decadente o Moribundo): Copa desvitalizada en más del 70%, muerte de ramas principales y colapso del sistema vascular.",
             "VIG-06 (Muerto / Árbol Seco): Sin presencia de masa foliar ni yemas activas en periodo vegetativo.",
             "No evaluable (Dormancia Invernal): Periodo de latencia en especies caducifolias; vigor no determinable por ausencia natural de follaje."
           ],
@@ -487,10 +479,8 @@ const ENCUESTA_COMPLETA = {
           n: "31",
           label: "Madera muerta (ramas secas)",
           opts: [
-            "MUE-00 (Sin Presencia / Copa Sanable): Ausencia de ramas secas o presencia insignificante de ramillas menores (<2 cm) sin riesgo de caída.",
             "MUE-01 (Leve - Ramillas / Ramas Menores Secas): Presencia de ramaje seco distribuido en la periferia de la copa (2 a 5 cm de diámetro). Riesgo bajo sobre el área de caída.",
             "MUE-02 (Moderado - Ramas Secas de Mediano Calibre): Múltiples ramas muertas en copa o ramas principales secas de 5 a 15 cm de diámetro. Requiere limpieza de copa programada.",
-            "MUE-03 (Severo - Rama Muerta Mayor de Gran Calibre): Presencia de una o más ramas estructurales muertas o fisuradas con diámetro >15 cm. Riesgo alto de impacto sobre el blanco.",
             'MUE-04 (Critico - Colapso Parcial de Copa / Rama Muerta Colgante): Ramas de gran volumen completamente muertas, desgajadas o atrapadas en la copa (ramas en "guillotina"). Riesgo de caída inminente.'
           ],
           otros: true,
@@ -586,8 +576,7 @@ const ENCUESTA_COMPLETA = {
             "CON-03 (Poda de Reducción / Reequilibrio Biomecánico): Poda para rebajar centro de gravedad, reducir el efecto vela o compensar asimetría severa de la copa.",
             "CON-04 (Poda de Limpieza / Sanitaria): Retiro exclusivo de ramas secas, enfermas, desgajadas o con deformaciones críticas.",
             "CON-05 (Destoconación / Reparación de Superficie): Extracción del tocón existente mediante destoconadora o reparación y acondicionamiento del alcorque/platabanda.",
-            "CON-06 (Extracción Inmediata / Tala Prioritaria): Retiro urgente del ejemplar por riesgo público inminente de fallo, daño irreparable o estado moribundo (Prioridad 1).",
-            "CON-07 (Estudio de Alta Precisión / Diagnóstico Instrumental): Requiere evaluación complementaria no destructiva (resistografía o tomografía sónica) previo a dictamen de tala."
+            "CON-06 (Extracción Inmediata / Tala Prioritaria): Retiro urgente del ejemplar por riesgo público inminente de fallo, daño irreparable o estado moribundo (Prioridad 1)."
           ],
           otros: true,
           id: "p38",
@@ -597,10 +586,9 @@ const ENCUESTA_COMPLETA = {
           n: "39",
           label: "Nivel de Riesgo del Blanco (Exposición y Flujo)",
           opts: [
-            "RIE-01 (Bajo - Uso Limitado / Ocupación Ocasiona < 25%): Áreas verdes sin estructuras, platabandas sin tránsito peatonal continuo o espacios donde el blanco está presente menos del 25% del tiempo.",
-            "RIE-02 (Medio - Uso Frecuente / Ocupación Intermitente 25% - 75%): Veredas residenciales, estacionamientos de rotación, cierros perimetrales, señalética o luminarias públicas.",
-            "RIE-03 (Alto - Uso Constante / Ocupación Continua > 75%): Calzadas principales de alto tránsito vehicular, viviendas habitadas adyacentes, paraderos de locomoción o zonas peatonales de flujo continuo.",
-            "RIE-04 (Crítico / Vulnerabilidad Extrema): Accesos directos a recintos de salud, establecimientos educacionales, jardines infantiles o zonas de alta concentración masiva de personas."
+            "RIE-01 (Bajo - Uso Limitado / Ocupación Ocasional): Áreas verdes sin estructuras o platabandas sin tránsito peatonal continuo.",
+            "RIE-02 (Medio - Uso Frecuente / Ocupación Intermitente): Veredas residenciales, estacionamientos, cierros perimetrales, señalética o luminarias.",
+            "RIE-03 (Alto / Crítico - Uso Constante o Vulnerabilidad Extrema): Calzadas de alto tránsito, viviendas habitadas, paraderos o flujo peatonal continuo; también accesos a recintos de salud, colegios, jardines infantiles o zonas de concentración masiva."
           ],
           otros: true,
           id: "p39",
@@ -647,7 +635,8 @@ const ENCUESTA_COMPLETA = {
           n: "41",
           label: "Fotografía de Detalle del Defecto",
           id: "p41",
-          type: "photo"
+          type: "photo",
+          multiple: true // sin límite de fotos (se guardan en p41, p41_2, p41_3…)
         }
       ]
     }

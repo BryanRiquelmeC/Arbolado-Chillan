@@ -2,7 +2,7 @@
 import Pastilla from "../ui/Pastilla.jsx";
 import Resaltar from "./Resaltar.jsx";
 import { TIPOS, claseUrgencia, especieDe, tituloDe, urgenciaDe } from "../../utils/registros.js";
-import { claseEstado, nombreEstado, siguienteDe, terminado } from "../../config/seguimiento.js";
+import { claseEstado, nombreEstado, siguienteDe, pasoSiguiente, terminado } from "../../config/seguimiento.js";
 import { CheckCircle2, ChevronDown } from "lucide-react";
 
 /** Estado del trabajo: Pendiente · En proceso · Terminado (+ lo que sigue) */
@@ -14,8 +14,8 @@ export function EstadoRegistro({ r, onClick }) {
         {nombreEstado(r)}
         {onClick && <ChevronDown size={12} className="ml-1 inline -mt-0.5 opacity-70" />}
       </Pastilla>
-      {siguienteDe(r) && (
-        <span className="mt-1 block text-[12px] font-semibold text-[#17663a]">{siguienteDe(r)}</span>
+      {pasoSiguiente(r) && (
+        <span className="mt-1 block text-[12px] font-semibold text-[#17663a]">{pasoSiguiente(r)}</span>
       )}
     </>
   );
@@ -71,7 +71,7 @@ export function DetalleBreve({ r, q }) {
           {/* Urgencias escritas a mano ("OTRA: …") pueden ser muy largas: se acortan
               para no ensanchar la tabla (el texto completo queda al pasar el mouse) */}
           <span title={u} className="inline-block max-w-full">
-            <Pastilla className={`${claseUrgencia(u)} whitespace-normal! wrap-break-word`}>
+            <Pastilla className={`${claseUrgencia(u)} !whitespace-normal break-words`}>
               <Resaltar texto={u.length > 40 ? u.slice(0, 38).trimEnd() + "…" : u} q={q} />
             </Pastilla>
           </span>

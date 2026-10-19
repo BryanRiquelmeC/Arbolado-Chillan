@@ -1,16 +1,18 @@
 /* Ficha completa de un registro (croquis, Matriz VTA o censo) */
 import { ENCUESTA } from "../../config/encuesta.js";
+import { filasCalculos, fotosDe, respuestaVTA } from "../../utils/vta.js";
 import { ETIQUETAS, GRUPOS } from "../../config/croquis.js";
 import DibujoCroquis from "../croquis/DibujoCroquis.jsx";
 import { fichaCenso, legible } from "../../utils/registros.js";
 import { ICONOS_SECCION } from "../../config/iconos.js";
 import { respuestasCensoVta } from "../../config/censoVta.js";
+import { urlFoto } from "../../utils/rutas.js";
 
 function Fila({ etiqueta, children }) {
   return (
     <dl className="grid grid-cols-1 gap-1 border-b border-borde py-2.5 text-[14.5px] sm:grid-cols-[minmax(150px,34%)_1fr] sm:gap-4">
       <dt className="font-bold text-c1">{etiqueta}</dt>
-      <dd className="leading-relaxed wrap-break-word">{children}</dd>
+      <dd className="leading-relaxed break-words">{children}</dd>
     </dl>
   );
 }
@@ -62,7 +64,7 @@ export default function DetalleRegistro({ registro: r }) {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {r.fotos.map((f, i) => (
                 <figure key={i} className="overflow-hidden rounded-xl border border-borde">
-                  <img src={f.img} alt={f.nota || `Fotografía ${i + 1}`} className="w-full" />
+                  <img src={urlFoto(f.img)} alt={f.nota || `Fotografía ${i + 1}`} className="w-full" />
                   {f.nota && <figcaption className="px-3 py-2 text-[13px]">{f.nota}</figcaption>}
                 </figure>
               ))}
@@ -112,14 +114,13 @@ export default function DetalleRegistro({ registro: r }) {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {r.fotos.map((f, i) => (
                 <figure key={i} className="overflow-hidden rounded-xl border border-borde">
-                  <img src={f.img} alt={f.nota || `Fotografía ${i + 1}`} className="w-full" />
+                  <img src={urlFoto(f.img)} alt={f.nota || `Fotografía ${i + 1}`} className="w-full" />
                   {f.nota && <figcaption className="px-3 py-2 text-[13px]">{f.nota}</figcaption>}
                 </figure>
               ))}
             </div>
           </>
         )}
-//         
       </>
     );
   }
@@ -133,11 +134,26 @@ export default function DetalleRegistro({ registro: r }) {
         if (p.type === "photo") {
           return (
             <Fila key={p.id} etiqueta={`${p.n}. ${p.label}`}>
-              {v ? <img src={v} alt="" className="max-h-64 max-w-full rounded-lg" /> : "—"}
+              {fotosDe(r, p).length ? (
+                <div className="flex flex-wrap gap-2">
+                  {fotosDe(r, p).map((f, i) => (
+                    <img key={i} src={urlFoto(f)} alt="" className="max-h-64 max-w-full rounded-lg" />
+                  ))}
+                </div>
+              ) : (
+                "—"
+              )}
             </Fila>
           );
         }
-        if (v === "Otros" && r[p.id + "_otro"]) v = "Otros: " + r[p.id + "_otro"];
+        if (p.type === "calculos") {
+          return filasCalculos(r).map(([k, val]) => (
+            <Fila key={k} etiqueta={k}>
+              {val}
+            </Fila>
+          ));
+        }
+        if (p.type === "radio" || p.type === "select") v = respuestaVTA(r, p);
         if (p.type === "gps" && r[p.id + "_gps"]) v = `${v || ""} · GPS: ${r[p.id + "_gps"]}`;
         return (
           <Fila key={p.id} etiqueta={`${p.n ? p.n + ". " : ""}${p.label}`}>

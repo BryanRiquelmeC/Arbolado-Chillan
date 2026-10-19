@@ -11,7 +11,7 @@ export const ESTADOS = {
   terminado: { nombre: "Terminado", clase: "bg-[#dff3e6] text-[#17663a]" }
 };
 
-/** Qué quedó listo al terminar → y qué sigue */
+/** Qué quedó listo al terminar → y qué sigue (el "sigue" se puede editar en el modal: campo siguiente_paso) */
 export const RESULTADOS = [
   { valor: "Intervención realizada", sigue: "Sin trabajo pendiente", detalle: "Poda o mantención realizada" },
   { valor: "Árbol extraído", sigue: "Listo para destoconar", detalle: "Queda el tocón por retirar" },
@@ -25,11 +25,17 @@ export const claseEstado = (r) => ESTADOS[estadoDe(r)].clase;
 export const terminado = (r) => estadoDe(r) === "terminado";
 
 /** "Listo para plantar", "Listo para destoconar"… (solo si está terminado) */
-export const siguienteDe = (r) =>
-  terminado(r) ? RESULTADOS.find((x) => x.valor === r.resultado)?.sigue || "" : "";
+export const siguienteDe = (r) => (terminado(r) ? sigueDe(r.resultado) : "");
+
+/** Siguiente paso para mostrar: el escrito en el modal o, si no hay, el automático.
+    (siguienteDe queda fijo para contadores y filtros: "Listo para plantar", etc.) */
+export const pasoSiguiente = (r) => (terminado(r) ? r.siguiente_paso?.trim() || siguienteDe(r) : "");
+
+/** Siguiente paso automático de un resultado (sirve de texto inicial editable) */
+export const sigueDe = (resultado) => RESULTADOS.find((x) => x.valor === resultado)?.sigue || "";
 
 /** Texto corto para listas y PDF: "Terminado · Tocón retirado → Listo para plantar" */
 export const resumenEstado = (r) =>
-  [nombreEstado(r), terminado(r) && r.resultado, siguienteDe(r) && "→ " + siguienteDe(r)]
+  [nombreEstado(r), terminado(r) && r.resultado, pasoSiguiente(r) && "→ " + pasoSiguiente(r)]
     .filter(Boolean)
     .join(" · ");

@@ -1,7 +1,8 @@
 /* Ficha: estado del trabajo, lo que sigue, fechas, nota, fotos e historial */
 import Pastilla from "../ui/Pastilla.jsx";
-import { ESTADOS, claseEstado, nombreEstado, siguienteDe, terminado } from "../../config/seguimiento.js";
+import { ESTADOS, claseEstado, nombreEstado, siguienteDe, pasoSiguiente, terminado } from "../../config/seguimiento.js";
 import { fechaHora } from "../../utils/registros.js";
+import { urlFoto } from "../../utils/rutas.js";
 
 const fecha = (f) => (f ? f.split("-").reverse().join("-") : "—");
 
@@ -15,7 +16,7 @@ export default function SeguimientoDetalle({ registro: r }) {
         <span className="text-[13px] font-bold tracking-wide text-c2 uppercase">Seguimiento</span>
         <Pastilla className={claseEstado(r)}>{nombreEstado(r)}</Pastilla>
         {terminado(r) && r.resultado && <Pastilla className="bg-white text-c1">{r.resultado}</Pastilla>}
-        {siguienteDe(r) && <b className="text-[13.5px] text-[#17663a]">→ {siguienteDe(r)}</b>}
+        {pasoSiguiente(r) && <b className="text-[13.5px] text-[#17663a]">→ {pasoSiguiente(r)}</b>}
       </div>
 
       {(r.fecha_inicio || r.fecha_termino || r.nota_seguimiento) && (
@@ -30,7 +31,7 @@ export default function SeguimientoDetalle({ registro: r }) {
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
           {r.fotos_seguimiento.map((f, i) => (
             <figure key={i} className="overflow-hidden rounded-lg border border-borde bg-white">
-              <img src={f.img} alt={f.nota || `Foto ${i + 1}`} className="w-full" />
+              <img src={urlFoto(f.img)} alt={f.nota || `Foto ${i + 1}`} className="w-full" />
               {f.nota && <figcaption className="px-2 py-1 text-[12px]">{f.nota}</figcaption>}
             </figure>
           ))}

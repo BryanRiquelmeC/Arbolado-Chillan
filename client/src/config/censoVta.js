@@ -5,6 +5,7 @@
    Para quitar o agregar una, edite esta lista.
    ============================================================= */
 import { PREGUNTAS } from "./encuesta.js";
+import { respuestaVTA } from "../utils/vta.js";
 
 const SECCIONES = [
   ["Dimensiones del árbol", ["p5", "p7"]],
@@ -27,8 +28,8 @@ export const CENSO_VTA = SECCIONES.map(([titulo, ids]) => ({
 /** Respuesta legible: "Otros: …" y unidades */
 function valor(r, p) {
   let v = r[p.id];
-  if (v === undefined || v === null || v === "") return "";
-  if (v === "Otros" && r[p.id + "_otro"]) v = "Otros: " + r[p.id + "_otro"];
+  if ((v === undefined || v === null || v === "") && !r[p.id + "_otros"]) return "";
+  if (p.type === "radio" || p.type === "select") v = respuestaVTA(r, p);
   if (p.unit) v = `${v} ${p.unit}`;
   return String(v);
 }

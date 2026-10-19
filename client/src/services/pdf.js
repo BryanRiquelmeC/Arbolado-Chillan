@@ -1,5 +1,5 @@
 import { respuestasCensoVta } from "../config/censoVta.js";
-import { nombreEstado, siguienteDe, terminado } from "../config/seguimiento.js";
+import { estadoDe, nombreEstado, pasoSiguiente, siguienteDe, terminado } from "../config/seguimiento.js";
 /* =============================================================
    Reportes PDF
    · pdfRegistro(r)   → croquis, Matriz VTA o censo (según tipo)
@@ -11,6 +11,7 @@ import { ENCUESTA } from "../config/encuesta.js";
 import { ETIQUETAS, GRUPOS } from "../config/croquis.js";
 import { croquisPng } from "../utils/croquis.js";
 import { Importar } from "./importar.js";
+import { filasCalculos, fotosDe, respuestaVTA } from "../utils/vta.js";
 import { BASE, urlFoto } from "../utils/rutas.js";
 import {
   TIPOS,
@@ -85,7 +86,8 @@ function recortarFirma(img) {
 
 /* Recuadro donde va la firma (mm). Ancho máx. 76: va centrada en x = W-52
    y el margen derecho de fotos y tablas está en W-14 (2 × 38 = 76 mm) */
-const CAJA_FIRMA = { ancho: 74, alto: 48, bajaSobreLinea: 6 };
+const CAJA_FIRMA = { ancho: 74, alto: 48, altoMin: 48, bajaSobreLinea: 6 };
+// altoMin: si no cabe a tamaño completo, se achica hasta este alto antes de pasar a otra hoja
 
 
 /* ---------- Piezas comunes ---------- */
@@ -128,15 +130,26 @@ const columnaClave = {
 };
 
 function cerrar(doc, W, archivo, yFinal) {
-  // La firma va debajo de lo último que se dibujó (tabla o fotos), nunca encima
-  let y = (yFinal ?? doc.lastAutoTable?.finalY ?? 220) + CAJA_FIRMA.alto + 8; // espacio para la firma
-  if (y > 250) {
+  // La firma va debajo de lo último que se dibujó (tabla o fotos), nunca encima.
+  // Si no cabe a tamaño completo, se achica para quedar en la misma hoja;
+  // solo pasa a una hoja nueva si ni siquiera cabe en tamaño mínimo.
+  const fin = (yFinal ?? doc.lastAutoTable?.finalY ?? 220) + 4;
+  const LINEA_MAX = 256; // más abajo choca con el pie de página
+  let alto = FIRMA_IMG ? CAJA_FIRMA.alto : 0;
+  let y = fin + alto - CAJA_FIRMA.bajaSobreLinea;
+  if (y > LINEA_MAX && FIRMA_IMG) {
+    alto = Math.max(CAJA_FIRMA.altoMin, LINEA_MAX - fin + CAJA_FIRMA.bajaSobreLinea);
+    y = fin + alto - CAJA_FIRMA.bajaSobreLinea;
+  }
+  if (y < fin + 10) y = fin + 10; // espacio mínimo si no hay imagen
+  if (y > LINEA_MAX) {
     doc.addPage();
-    y = CAJA_FIRMA.alto + 30;
+    alto = FIRMA_IMG ? CAJA_FIRMA.alto : 0;
+    y = 40 + alto;
   }
   if (FIRMA_IMG) {
     // La firma llena el recuadro sin deformarse, centrada sobre el nombre
-    const escala = Math.min(CAJA_FIRMA.ancho / FIRMA_IMG.ancho, CAJA_FIRMA.alto / FIRMA_IMG.alto);
+    const escala = Math.min(CAJA_FIRMA.ancho / FIRMA_IMG.ancho, alto / FIRMA_IMG.alto);
     const w = FIRMA_IMG.ancho * escala;
     const h = FIRMA_IMG.alto * escala;
     doc.addImage(FIRMA_IMG.data, "PNG", W - 52 - w / 2, y + CAJA_FIRMA.bajaSobreLinea - h, w, h);
@@ -220,6 +233,35 @@ const nombreArchivo = (t) => Importar.slug(t || "sin_direccion").replace(/-/g, "
 const subtitulo = (r) =>
   `Registro ${r._id.toUpperCase()}  ·  ${new Date(r._creado).toLocaleString("es-CL")}`;
 
+/* ---------- Estado del trabajo (Pendiente · En proceso · Terminado) ---------- */
+
+const fechaCL = (f) => (f ? new Date(f + "T12:00:00").toLocaleDateString("es-CL") : "");
+
+/** Tabla con el estado del trabajo del árbol (va en todos los PDF de un árbol) */
+function tablaEstado(doc, y, r) {
+  const filas = [["Estado", nombreEstado(r)]];
+  if (terminado(r) && r.resultado) filas.push(["Resultado", r.resultado]);
+  if (pasoSiguiente(r)) filas.push(["Siguiente paso", pasoSiguiente(r)]);
+  if (estadoDe(r) !== "pendiente" && r.fecha_inicio) filas.push(["Fecha de inicio", fechaCL(r.fecha_inicio)]);
+  if (terminado(r) && r.fecha_termino) filas.push(["Fecha de término", fechaCL(r.fecha_termino)]);
+  if (r.nota_seguimiento) filas.push(["Observación", r.nota_seguimiento]);
+  const colores = { pendiente: [75, 91, 107], proceso: [138, 97, 0], terminado: [23, 102, 58] };
+  return tabla(doc, y, ["Estado del trabajo", ""], filas, {
+    ...columnaClave,
+    didParseCell: (c) => {
+      // "Estado" en negrita y con el color de su estado
+      if (c.section === "body" && c.row.index === 0 && c.column.index === 1) {
+        c.cell.styles.fontStyle = "bold";
+        c.cell.styles.textColor = colores[estadoDe(r)];
+      }
+    }
+  });
+}
+
+/** Fotos del trabajo (durante / después), si las hay */
+const fotosTrabajo = (r) =>
+  (r.fotos_seguimiento || []).filter((f) => f?.img).map((f, i) => [`Trabajo ${i + 1}${f.nota ? ": " + f.nota : ""}`, f.img]);
+
 /* ---------- Por tipo ---------- */
 
 async function pdfCroquis(r) {
@@ -237,7 +279,9 @@ async function pdfCroquis(r) {
       columnaClave
     );
   }
+  y = tablaEstado(doc, y, r);
   y = fotosPdf(doc, W, y, r.fotos);
+  y = dibujarFotos(doc, W, y, fotosTrabajo(r));
   cerrar(doc, W, `croquis_${nombreArchivo(r.direccion)}_${r._id}.pdf`, y);
 }
 
@@ -247,22 +291,24 @@ function pdfEncuesta(r) {
   const valor = (p) => {
     let v = r[p.id];
     if (p.type === "photo") {
-      if (v) fotos.push([p.label, v]);
-      return v ? "Ver fotografía adjunta" : "—";
+      const lista = fotosDe(r, p);
+      lista.forEach((img, i) => fotos.push([lista.length > 1 ? `${p.label} (${i + 1})` : p.label, img]));
+      return lista.length ? `Ver fotografía${lista.length > 1 ? "s" : ""} adjunta${lista.length > 1 ? "s" : ""}` : "—";
     }
-    if (v === "Otros" && r[p.id + "_otro"]) v = "Otros: " + r[p.id + "_otro"];
+    if (p.type === "radio" || p.type === "select") v = respuestaVTA(r, p);
     if (p.type === "gps" && r[p.id + "_gps"]) v = (v || "") + "  ·  Coordenadas: " + r[p.id + "_gps"];
     return legible(v);
   };
   let y = 36;
   for (const s of ENCUESTA.secciones) {
-    const cuerpo = s.preguntas.map((p) => [
+    const cuerpo = s.preguntas.flatMap((p) => p.type === "calculos" ? filasCalculos(r) : [[
       `${p.label}${p.unit ? ` (${p.unit})` : ""}`,
       valor(p)
-    ]);
+    ]]);
     y = tabla(doc, y, [s.titulo, ""], cuerpo, columnaClave);
   }
-  y = dibujarFotos(doc, W, y, fotos);
+  y = tablaEstado(doc, y, r);
+  y = dibujarFotos(doc, W, y, [...fotos, ...fotosTrabajo(r)]);
   cerrar(doc, W, `matriz_vta_${nombreArchivo(r.direccion)}_${r._id}.pdf`, y);
 }
 
@@ -292,7 +338,9 @@ function pdfCenso(r) {
   }
   for (const [titulo, filas] of respuestasCensoVta(r)) y = tabla(doc, y, [titulo, ""], filas, columnaClave);
   if (r.campos?.length) y = tabla(doc, y, ["Evaluación completa", ""], r.campos, columnaClave);
+  y = tablaEstado(doc, y, r);
   y = fotosPdf(doc, W, y, r.fotos);
+  y = dibujarFotos(doc, W, y, fotosTrabajo(r));
   cerrar(doc, W, `censo_mz${r.manzana}_${Importar.slug(r.id_arbol || r._id)}.pdf`, y);
 }
 
@@ -369,7 +417,7 @@ export async function pdfManzana(manzana, registros) {
       TIPOS[r._tipo]?.nombre || "",
       especieDe(r) || "—",
       urgenciaDe(r) || "—",
-      [nombreEstado(r), r.resultado && terminado(r) ? r.resultado : "", siguienteDe(r)].filter(Boolean).join("\n")
+      [nombreEstado(r), r.resultado && terminado(r) ? r.resultado : "", pasoSiguiente(r)].filter(Boolean).join("\n")
     ]),
     {
       styles: { fontSize: 8, cellPadding: 1.8, lineColor: [207, 227, 242] },

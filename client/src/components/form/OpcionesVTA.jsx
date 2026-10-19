@@ -1,7 +1,11 @@
 /* =============================================================
    Opciones de la Matriz VTA: código en negrita + descripción.
-   Tocar la opción marcada la desmarca. Incluye "Otros:" con texto.
+   · Tocar la opción marcada la desmarca.
+   · "Otros:" es independiente: se puede marcar junto con una opción.
+   · sub: al elegir la opción indicada (ej. "Sí") se despliegan
+     sub-opciones (ej. Domiciliaria / Alumbrado público).
    ============================================================= */
+import { Chips } from "./Controles.jsx";
 
 /** Separa "BIO-01 (Leve…): descripción" en título y descripción */
 function partes(o) {
@@ -10,7 +14,7 @@ function partes(o) {
 }
 
 /** Una opción (definida fuera para que el texto de "Otros" no pierda el foco) */
-function Opcion({ nombre, activo, onAlternar, children }) {
+function Opcion({ tipo = "radio", nombre, activo, onAlternar, children }) {
   return (
     <label
       className={`flex items-start gap-3 rounded-xl border-[1.5px] px-4 py-3 transition ${
@@ -20,59 +24,89 @@ function Opcion({ nombre, activo, onAlternar, children }) {
       }`}
     >
       <input
-        type="radio"
-        name={nombre}
+        type={tipo}
+        name={tipo === "radio" ? nombre : undefined}
         checked={activo}
         onChange={() => {}}
         onClick={onAlternar}
-        className="mt-0.5 size-4.75 flex-none accent-c2"
+        className="mt-0.5 size-[19px] flex-none accent-c2"
       />
       {children}
     </label>
   );
 }
 
-export default function OpcionesVTA({ nombre, opciones, otros, valor, otro, onCambiar, onOtro }) {
+export default function OpcionesVTA({
+  nombre,
+  opciones,
+  otros,
+  valor,
+  otrosActivo,
+  otro,
+  sub,
+  subValor,
+  onCambiar,
+  onOtrosActivo,
+  onOtro,
+  onSub
+}) {
+  const elegida = valor === "Otros" ? "" : valor; // registros antiguos guardaban "Otros" como respuesta
+  // Sub-opciones guardadas como texto "Domiciliaria, Alumbrado público"
+  const subLista = String(subValor || "").split(", ").filter(Boolean);
+
   return (
     <div className="flex flex-col gap-2.5">
       {opciones.map((o) => {
         const [titulo, desc] = partes(o);
+        const activo = elegida === o;
+        const conSub = sub && activo && o.startsWith(sub.si);
         return (
-          <Opcion
-            key={o}
-            nombre={nombre}
-            activo={valor === o}
-            onAlternar={() => onCambiar(valor === o ? "" : o)}
-          >
-            <span className="flex min-w-0 flex-col gap-1">
-              <b className="text-[15px] text-c1">{titulo}</b>
-              {desc && (
-                <span className="text-[14.5px] leading-relaxed font-medium text-[#2b4a63]">
-                  {desc}
-                </span>
-              )}
-            </span>
-          </Opcion>
+          <div key={o} className="flex flex-col gap-2">
+            <Opcion
+              nombre={nombre}
+              activo={activo}
+              onAlternar={() => {
+                onCambiar(activo ? "" : o);
+                if (sub && (activo || !o.startsWith(sub.si))) onSub(""); // limpiar sub-opción
+              }}
+            >
+              <span className="flex min-w-0 flex-col gap-1">
+                <b className="text-[15px] text-c1">{titulo}</b>
+                {desc && (
+                  <span className="text-[14.5px] leading-relaxed font-medium text-[#2b4a63]">{desc}</span>
+                )}
+              </span>
+            </Opcion>
+            {conSub && (
+              <div className="ml-8 flex flex-col gap-2 rounded-xl border-l-4 border-c3 bg-c5 px-4 py-3">
+                <span className="text-[13px] font-bold text-c1">{sub.titulo} (puede marcar ambas)</span>
+                <Chips
+                  multiple
+                  opciones={sub.opciones}
+                  valor={subLista}
+                  onCambiar={(lista) => onSub(sub.opciones.filter((x) => lista.includes(x)).join(", "))}
+                />
+              </div>
+            )}
+          </div>
         );
       })}
       {otros && (
         <Opcion
-          nombre={nombre}
-          activo={valor === "Otros"}
-          onAlternar={(e) =>
-            e.target.type === "radio" && onCambiar(valor === "Otros" ? "" : "Otros")
-          }
+          tipo="checkbox"
+          activo={otrosActivo}
+          onAlternar={(e) => e.target.type === "checkbox" && onOtrosActivo(!otrosActivo)}
         >
           <span className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
             <b className="text-[15px] text-c1">Otros:</b>
             <input
               type="text"
               className="campo flex-1 py-2"
-              placeholder="Especifique…"
+              placeholder="Especifique… (se puede marcar junto con otra opción)"
               value={otro ?? ""}
               onChange={(e) => {
                 onOtro(e.target.value);
-                if (valor !== "Otros") onCambiar("Otros");
+                if (!otrosActivo) onOtrosActivo(true);
               }}
             />
           </span>

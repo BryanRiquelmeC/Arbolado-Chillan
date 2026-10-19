@@ -5,7 +5,7 @@ import Modal from "../ui/Modal.jsx";
 import Boton from "../ui/Boton.jsx";
 import Campo from "../form/Campo.jsx";
 import CampoFotos from "../form/CampoFotos.jsx";
-import { ESTADOS, RESULTADOS, estadoDe } from "../../config/seguimiento.js";
+import { ESTADOS, RESULTADOS, estadoDe, sigueDe } from "../../config/seguimiento.js";
 import { tituloDe, manzanaDe } from "../../utils/registros.js";
 
 const ICONOS = { pendiente: Circle, proceso: Clock, terminado: CheckCircle2 };
@@ -20,6 +20,7 @@ export default function ModalSeguimiento({ registro, onCerrar, onGuardar }) {
       setD({
         estado: estadoDe(registro),
         resultado: registro.resultado || "",
+        siguiente_paso: registro.siguiente_paso || sigueDe(registro.resultado),
         fecha_inicio: registro.fecha_inicio || "",
         fecha_termino: registro.fecha_termino || "",
         nota_seguimiento: registro.nota_seguimiento || "",
@@ -47,6 +48,7 @@ export default function ModalSeguimiento({ registro, onCerrar, onGuardar }) {
       ...registro,
       ...d,
       resultado: d.estado === "terminado" ? d.resultado : "",
+      siguiente_paso: d.estado === "terminado" ? d.siguiente_paso.trim() : "",
       historial: [
         ...(registro.historial || []),
         {
@@ -107,7 +109,15 @@ export default function ModalSeguimiento({ registro, onCerrar, onGuardar }) {
                 <button
                   key={x.valor}
                   type="button"
-                  onClick={() => set("resultado", x.valor)}
+                  onClick={() =>
+                    setD((v) => ({
+                      ...v,
+                      resultado: x.valor,
+                      // Si el siguiente paso era el automático (o estaba vacío), se reemplaza por el del nuevo resultado
+                      siguiente_paso:
+                        !v.siguiente_paso.trim() || v.siguiente_paso === sigueDe(v.resultado) ? x.sigue : v.siguiente_paso
+                    }))
+                  }
                   className={`cursor-pointer rounded-xl border-2 px-4 py-3 text-left transition ${
                     activo ? "border-[#17663a] bg-[#dff3e6]" : "border-borde bg-white hover:border-c2/40"
                   }`}
@@ -119,6 +129,16 @@ export default function ModalSeguimiento({ registro, onCerrar, onGuardar }) {
               );
             })}
           </div>
+          {d.resultado && (
+            <Campo etiqueta="Siguiente paso (puede editarlo)" className="mt-4">
+              <input
+                className="campo"
+                value={d.siguiente_paso}
+                onChange={(e) => set("siguiente_paso", e.target.value)}
+                placeholder="Ej: Requiere nueva poda en 6 meses"
+              />
+            </Campo>
+          )}
         </>
       )}
 
@@ -134,13 +154,13 @@ export default function ModalSeguimiento({ registro, onCerrar, onGuardar }) {
             <input type="date" className="campo" value={d.fecha_termino} onChange={(e) => set("fecha_termino", e.target.value)} />
           </Campo>
         )}
-        <Campo etiqueta="Nota (opcional)" className="sm:col-span-2">
+        <Campo etiqueta="Observación / nota (opcional)" className="sm:col-span-2">
           <textarea
-            rows={2}
+            rows={3}
             className="campo"
             value={d.nota_seguimiento}
             onChange={(e) => set("nota_seguimiento", e.target.value)}
-            placeholder="Ej: cuadrilla 2, se retiró con grúa…"
+            placeholder="Ej: cuadrilla 2, se retiró con grúa, vecino informado…"
           />
         </Campo>
       </div>
