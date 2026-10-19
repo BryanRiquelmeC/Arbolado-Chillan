@@ -637,6 +637,13 @@ const ENCUESTA_COMPLETA = {
           type: "radio"
         },
         {
+          n: "42",
+          label: "Observaciones",
+          placeholder: "Cualquier comentario adicional sobre el árbol o su entorno (opcional)…",
+          id: "p42",
+          type: "textarea"
+        },
+        {
           n: "41",
           label: "Fotografía de Detalle del Defecto",
           id: "p41",

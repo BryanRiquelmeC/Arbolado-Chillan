@@ -23,13 +23,6 @@ export default function SeccionIdentificacion({ d, set }) {
             onChange={(e) => set("fecha", e.target.value)}
           />
         </Campo>
-        <Campo etiqueta="Km inicial">
-          <Texto
-            valor={d.km_inicial}
-            onCambiar={(v) => set("km_inicial", v)}
-            placeholder="Ej: 7887"
-          />
-        </Campo>
       </div>
     </Tarjeta>
   );
