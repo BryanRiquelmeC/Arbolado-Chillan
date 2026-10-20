@@ -4,6 +4,7 @@ import CampoGps from "../form/CampoGps.jsx";
 import CampoFoto from "../form/CampoFoto.jsx";
 import OpcionesVTA from "../form/OpcionesVTA.jsx";
 import CalculosVTA from "./CalculosVTA.jsx";
+import VinculoCroquis from "../vinculo/VinculoCroquis.jsx";
 import { fotosDe, guardarFotos, otrosMarcado } from "../../utils/vta.js";
 import { BotonQuitar, Lista, Numero, Texto } from "../form/Controles.jsx";
 
@@ -83,12 +84,14 @@ function Control({ p, d, set }) {
 
 export default function PreguntaVTA({ p, d, set }) {
   if (p.type === "calculos") return <CalculosVTA d={d} set={set} />;
+  if (p.type === "vinculo") return <VinculoCroquis d={d} set={set} />;
   const ancho = ANCHO_COMPLETO.includes(p.type);
   const conQuitar = p.type === "radio" || p.type === "select";
 
   return (
     <Campo
       etiqueta={`${p.n ? p.n + ". " : ""}${p.label}`}
+      campo={p.id}
       requerido={p.req}
       ayuda={p.hint}
       ancho={ancho}

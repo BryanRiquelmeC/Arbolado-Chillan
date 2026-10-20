@@ -48,9 +48,9 @@ export function respuestaVTA(r, p) {
 
 /** Presión del viento q (kg/m²) */
 export const VIENTOS = [
-  { valor: "12", texto: "Viento fuerte (50 km/h) · 12 kg/m²" },
-  { valor: "23", texto: "Temporal (70 km/h) · 23 kg/m²" },
-  { valor: "38", texto: "Temporal fuerte (90 km/h) · 38 kg/m²" }
+  { valor: "12", texto: "Viento fuerte (50 km/h) · 12 kg/m²", nombre: "Viento fuerte", kmh: 50, señal: "Mueve ramas" },
+  { valor: "23", texto: "Temporal (70 km/h) · 23 kg/m²", nombre: "Temporal", kmh: 70, señal: "Quiebra ramillas" },
+  { valor: "38", texto: "Temporal fuerte (90 km/h) · 38 kg/m²", nombre: "Temporal fuerte", kmh: 90, señal: "Derriba árboles" }
 ];
 
 /** Clasificaciones que el evaluador puede confirmar o cambiar */
@@ -91,6 +91,7 @@ export function calculosVTA(d) {
   // 2) Fuerza del viento F = q × A × Cd, con A = alto de copa × ancho × 0,8
   const altoCopa = num(d.vta_alto_copa);
   const area = altoCopa && anchoCopa ? altoCopa * anchoCopa * 0.8 : null;
+  // q y Cd los elige el evaluador para cada árbol (sin valores por defecto)
   const q = num(d.vta_q);
   const cd = num(d.vta_cd);
   const fuerza = q && area && cd ? q * area * cd : null; // kg (kilogramo-fuerza)
@@ -132,18 +133,22 @@ const fmt = (n, u = "") => (n === null || n === undefined ? "—" : `${String(n)
 const textoClase = (clases, valor) =>
   (clases.find((c) => c.valor === valor)?.texto || valor || "").replace("≥", ">=").replace("–", "-");
 
+/** Si el evaluador eligió otra clasificación, se aclara en el PDF */
+const conCriterio = (texto, elegida, sugerida) =>
+  texto && sugerida && elegida !== sugerida ? `${texto}. Criterio propio (el cálculo indica ${sugerida})` : texto;
+
 /** Filas [etiqueta, valor] para el detalle y el PDF (solo lo que tenga datos) */
 export function filasCalculos(r) {
   const c = calculosVTA(r);
   const filas = [
     ["Esbeltez (H/D)", c.esbeltez !== null ? fmt(c.esbeltez) : ""],
-    ["Clasificación de esbeltez", textoClase(CLASES_ESBELTEZ, c.esbClase)],
+    ["Clasificación de esbeltez", conCriterio(textoClase(CLASES_ESBELTEZ, c.esbClase), c.esbClase, c.esbSugerida)],
     ["Ancho promedio de copa", c.anchoCopa !== null ? fmt(c.anchoCopa, " m") : ""],
     ["Área de copa (A = alto x ancho x 0,8)", c.area !== null ? fmt(c.area, " m2") : ""],
     ["Fuerza del viento (F = q x A x Cd)", c.fuerza !== null ? `${fmt(c.fuerza, " kg")}  (q ${fmt(c.q)} kg/m2, Cd ${fmt(c.cd)})` : ""],
     ["Momento de flexión (M = F x h)", c.momento !== null ? `${fmt(c.momento, " kg·m")}  (h ${fmt(c.brazo, " m")})` : ""],
     ["Pared residual (t/R)", c.pared !== null ? `${fmt(c.pared)}  (t ${fmt(c.t, " cm")} / R ${fmt(c.R, " cm")})` : ""],
-    ["Clasificación pared residual", textoClase(CLASES_PARED, c.paredClase)]
+    ["Clasificación pared residual", conCriterio(textoClase(CLASES_PARED, c.paredClase), c.paredClase, c.paredSugerida)]
   ];
   return filas.filter(([, v]) => v);
 }

@@ -20,6 +20,11 @@ const ENCUESTA_COMPLETA = {
           type: "text"
         },
         {
+          label: "Croquis de este árbol",
+          id: "vinculo",
+          type: "vinculo" // tarjeta para vincular el croquis (no es una pregunta)
+        },
+        {
           n: "4",
           label: "Dirección y coordenadas GPS",
           id: "direccion",
@@ -162,6 +167,7 @@ const ENCUESTA_COMPLETA = {
             "BIO-01 (Leve - Insectos Defoliadores / Succionadores): Presencia de pulgones, conchuelas, escamas o fumagina sin afectación estructural de la copa.",
             "BIO-02 (Leve a Moderado - Hongos Foliares): Manchas foliares, oídio o roya que afectan la estética o la capacidad fotosintética temporal.",
             "BIO-03 (Moderado - Patógenos Corticales / Chancros): Lesiones activas en la corteza, chancros o exsudaciones/gomosis en fuste o ramas principales.",
+            "BIO-04 (Critico - Taladradores / Insectos Xilófagos): Orificios de salida, galerías activas o presencia de aserrín en la base/fuste (daño biomecánico severo a la madera)."
           ],
           otros: true,
           id: "p9",
@@ -204,7 +210,7 @@ const ENCUESTA_COMPLETA = {
           label: "Oquedad en Tronco",
           opts: [
             "Ninguna / Superficial: Sin cavidades ni pérdida visible de madera estructural; corteza sana o daño epidérmico sin pudrición.",
-            "OQU-03 (Severo / Riesgo Estructural - Tala/Remoción): Cavidad basal profunda, tronco hueco o pudrición extensa con poca pared de madera sana remanente. Exige tala o remoción prioritaria.",
+            "OQU-03 (Severo / Riesgo Estructural - Tala/Remoción): Cavidad basal profunda, tronco hueco o pudrición extensa con poca pared de madera sana remanente. Exige tala o remoción prioritaria."
           ],
           otros: true,
           id: "p12",

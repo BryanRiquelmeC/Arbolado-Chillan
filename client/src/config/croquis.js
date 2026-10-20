@@ -34,22 +34,30 @@ export const PERFIL = [
   { id: "vereda_der", titulo: "Vereda der.", uso: "uso_vereda_der", especie: "esp_vereda_der", urgencia: "urg_vereda_der" }
 ];
 
-/** Datos del árbol (campos numéricos con unidad) */
+/** Estado del testigo (muestra de madera) */
+export const ESTADOS_TESTIGO = [
+  { valor: "Resistente", tono: "ok", ayuda: "Madera sana y firme" },
+  { valor: "Madera podrida", tono: "peligro", ayuda: "Blanda o húmeda" },
+  { valor: "Madera molida", tono: "peligro", ayuda: "Se deshace en polvo" },
+  { valor: "Madera negra", tono: "medio", ayuda: "Oscurecida o manchada" }
+];
+
+/** Datos del árbol, agrupados para la pantalla (grupo) y en este orden para el PDF */
 export const DATOS_ARBOL = [
-  { id: "testigo_diam", label: "Testigo – diámetro", unidad: "cm", ej: "6" },
-  { id: "testigo_alt", label: "Testigo – altura medición", unidad: "m", ej: "1.30" },
-  { id: "dap", label: "DAP", unidad: "cm", ej: "56" },
-  { id: "altura_copa", label: "Altura de copa", unidad: "m", ej: "12.6" },
-  { id: "distancia_d", label: "Distancia (D)", unidad: "m", ej: "1.8" },
-  { id: "copa_n", label: "Proyección copa Norte", unidad: "m", ej: "3.5" },
-  { id: "copa_s", label: "Proyección copa Sur", unidad: "m", ej: "3.05" },
-  { id: "inclinacion", label: "Inclinación", unidad: "°", ej: "12" },
-  { id: "orient_incl", label: "Orientación inclinación", opciones: ORIENTACIONES },
-  { id: "alt_incl", label: "Altura punto de inclinación", unidad: "m", ej: "1.4" },
-  { id: "base_ancho", label: "Ancho base / cuello", unidad: "cm", ej: "45" },
-  { id: "raiz", label: "Profundidad / raíz", unidad: "cm", ej: "30" },
-  { id: "med_tronco", label: "Medida tronco", unidad: "cm", ej: "31" },
-  { id: "med_adic", label: "Medida adicional", unidad: "cm", ej: "8" }
+  { id: "testigo_diam", label: "Testigo", unidad: "cm", ej: "6", grupo: "Testigo" },
+  { id: "testigo_alt", label: "Testigo – altura medición", unidad: "m", ej: "1.30", grupo: "Testigo" },
+  { id: "testigo_estado", label: "Estado del testigo", estados: ESTADOS_TESTIGO, grupo: "Testigo" },
+  { id: "dap", label: "DAP", unidad: "cm", ej: "56", grupo: "Tronco y copa" },
+  { id: "altura_copa", label: "Altura de copa", unidad: "m", ej: "12.6", grupo: "Tronco y copa" },
+  { id: "distancia_d", label: "Distancia (D)", unidad: "m", ej: "1.8", grupo: "Tronco y copa" },
+  { id: "copa_n", label: "Proyección copa Norte", corto: "Norte", unidad: "m", ej: "3.5", grupo: "Proyección de copa" },
+  { id: "copa_s", label: "Proyección copa Sur", corto: "Sur", unidad: "m", ej: "3.05", grupo: "Proyección de copa" },
+  { id: "copa_e", label: "Proyección copa Oriente", corto: "Oriente", unidad: "m", ej: "3", grupo: "Proyección de copa" },
+  { id: "copa_o", label: "Proyección copa Poniente", corto: "Poniente", unidad: "m", ej: "3", grupo: "Proyección de copa" },
+  { id: "inclinacion", label: "Grado de inclinación", unidad: "°", ej: "12", grupo: "Inclinación" },
+  { id: "orient_incl", label: "Orientación inclinación", opciones: ORIENTACIONES, grupo: "Inclinación" },
+  { id: "med_tronco", label: "Medida tronco", unidad: "cm", ej: "31", grupo: "Otras medidas" },
+  { id: "med_adic", label: "Medida adicional", unidad: "cm", ej: "8", grupo: "Otras medidas" }
 ];
 
 /** Etiquetas para la ficha y el PDF */
@@ -100,7 +108,7 @@ export const ETIQUETAS = {
 
 /** Secciones de la ficha y del PDF */
 export const GRUPOS = [
-  ["Identificación", ["direccion", "direccion_gps", "manzana", "fecha", "km_inicial", "registro"]],
+  ["Identificación", ["direccion", "direccion_gps", "manzana", "fecha"]],
   [
     "Red eléctrica y tránsito",
     [

@@ -2,8 +2,8 @@ import { respuestasCensoVta } from "../config/censoVta.js";
 import { estadoDe, nombreEstado, pasoSiguiente, siguienteDe, terminado } from "../config/seguimiento.js";
 /* =============================================================
    Reportes PDF
-   · pdfRegistro(r)   → croquis, Matriz VTA o censo (según tipo)
-   · pdfManzana(m, l) → informe resumen de una manzana
+   · pdfRegistro(r)   croquis, Matriz VTA o censo (según tipo)
+   · pdfManzana(m, l) informe resumen de una manzana
    ============================================================= */
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
@@ -283,8 +283,12 @@ async function cuerpoCroquis(doc, W, r, y) {
   const ancho = W - 28;
   doc.addImage(png, "PNG", 14, y, ancho, ancho * 0.3);
   y += ancho * 0.3 + 6;
+  // Solo lo que se llenó: se omiten filas vacías y secciones sin datos
+  const lleno = (v) => !(v === undefined || v === null || String(v).trim() === "" || (Array.isArray(v) && !v.length));
   for (const [titulo, ids] of GRUPOS) {
-    y = tabla(doc, y, [titulo, ""], ids.map((id) => [ETIQUETAS[id] || id, legible(r[id])]), columnaClave);
+    // ancho_total se calcula solo: "0.00" significa que no se ingresaron anchos
+    const filas = ids.filter((id) => lleno(r[id]) && !(id === "ancho_total" && !parseFloat(r[id]))).map((id) => [ETIQUETAS[id] || id, legible(r[id])]);
+    if (filas.length) y = tabla(doc, y, [titulo, ""], filas, columnaClave);
   }
   return y;
 }
@@ -297,17 +301,22 @@ function cuerpoEncuesta(doc, W, r, y) {
     if (p.type === "photo") {
       const lista = fotosDe(r, p);
       lista.forEach((img, i) => fotos.push([lista.length > 1 ? `${p.label} (${i + 1})` : p.label, img]));
-      return lista.length ? `Ver fotografía${lista.length > 1 ? "s" : ""} adjunta${lista.length > 1 ? "s" : ""}` : "—";
+      return lista.length ? `Ver fotografía${lista.length > 1 ? "s" : ""} adjunta${lista.length > 1 ? "s" : ""}` : "";
     }
     if (p.type === "radio" || p.type === "select") v = respuestaVTA(r, p);
-    if (p.type === "gps" && r[p.id + "_gps"]) v = (v || "") + "  ·  Coordenadas: " + r[p.id + "_gps"];
+    if (p.type === "gps" && r[p.id + "_gps"]) v = (v ? v + "  ·  " : "") + "Coordenadas: " + r[p.id + "_gps"];
+    // Vacío → "" para omitir la fila
+    if (v === undefined || v === null || String(v).trim() === "" || (Array.isArray(v) && !v.length)) return "";
     return legible(v);
   };
+  // Solo lo respondido: se omiten preguntas vacías y secciones sin datos
   for (const s of ENCUESTA.secciones) {
-    const cuerpo = s.preguntas.flatMap((p) =>
-      p.type === "calculos" ? filasCalculos(r) : [[`${p.label}${p.unit ? ` (${p.unit})` : ""}`, valor(p)]]
-    );
-    y = tabla(doc, y, [s.titulo, ""], cuerpo, columnaClave);
+    const cuerpo = s.preguntas
+      .flatMap((p) =>
+        p.type === "vinculo" ? [] : p.type === "calculos" ? filasCalculos(r) : [[`${p.label}${p.unit ? ` (${p.unit})` : ""}`, valor(p)]]
+      )
+      .filter(([, v]) => v);
+    if (cuerpo.length) y = tabla(doc, y, [s.titulo, ""], cuerpo, columnaClave);
   }
   return { y, fotos };
 }

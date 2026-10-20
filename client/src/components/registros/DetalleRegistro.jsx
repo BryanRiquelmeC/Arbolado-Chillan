@@ -146,6 +146,7 @@ export default function DetalleRegistro({ registro: r }) {
             </Fila>
           );
         }
+        if (p.type === "vinculo") return null;
         if (p.type === "calculos") {
           return filasCalculos(r).map(([k, val]) => (
             <Fila key={k} etiqueta={k}>

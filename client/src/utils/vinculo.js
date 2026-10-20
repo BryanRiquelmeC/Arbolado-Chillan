@@ -39,7 +39,9 @@ export function datosDesdeCroquis(c) {
     direccion_gps: c.direccion_gps,
     p7: c.dap, // DAP (cm)
     vta_copa_n: c.copa_n, // proyección de copa (m)
-    vta_copa_s: c.copa_s
+    vta_copa_s: c.copa_s,
+    vta_copa_e: c.copa_e, // Oriente = Este
+    vta_copa_o: c.copa_o // Poniente = Oeste
   };
   return Object.fromEntries(Object.entries(datos).filter(([, v]) => v !== undefined && v !== null && v !== ""));
 }
@@ -51,7 +53,9 @@ export const NOMBRES_COPIA = {
   direccion_gps: "Coordenadas GPS",
   p7: "DAP",
   vta_copa_n: "Copa Norte",
-  vta_copa_s: "Copa Sur"
+  vta_copa_s: "Copa Sur",
+  vta_copa_e: "Copa Oriente",
+  vta_copa_o: "Copa Poniente"
 };
 
 const USOS = ["uso_vereda_izq", "uso_plata_izq", "uso_plata_der", "uso_vereda_der"];
@@ -96,6 +100,11 @@ export function alertasPunto(c, m) {
     alertas.push(
       `Espacio estrecho: ${c.ubic_arbol} de ${String(ancho).replace(".", ",")} m para un árbol de gran porte (posible conflicto de raíces con la infraestructura).`
     );
+
+  // Testigo con madera dañada, pero la Matriz no registra oquedad
+  const testigoMalo = ["Madera podrida", "Madera molida"].includes(c.testigo_estado);
+  if (testigoMalo && String(m.p12 || "").startsWith("Ninguna"))
+    alertas.push(`El testigo del croquis indica "${c.testigo_estado}", pero la Matriz no registra oquedad en el tronco.`);
 
   return alertas;
 }

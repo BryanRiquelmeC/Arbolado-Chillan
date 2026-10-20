@@ -5,11 +5,15 @@ export default function Campo({
   ayuda,
   ancho = false,
   accion,
+  campo, // clave del dato: permite ir a este campo cuando falta completarlo
   className = "",
   children
 }) {
   return (
-    <div className={`flex min-w-0 flex-col gap-2 ${ancho ? "col-span-full" : ""} ${className}`}>
+    <div
+      data-campo={campo}
+      className={`flex min-w-0 scroll-mt-24 flex-col gap-2 rounded-xl ${ancho ? "col-span-full" : ""} ${className}`}
+    >
       {(etiqueta || accion) && (
         <div className="flex flex-wrap items-center justify-between gap-2">
           {etiqueta && (

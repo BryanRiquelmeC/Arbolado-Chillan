@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext.jsx";
 import { pdfRegistro } from "../services/pdf.js";
 import { dispositivo, nuevoId } from "../utils/registros.js";
+import { irACampo } from "../utils/irACampo.js";
 
 export function useGuardarFormulario({ tipo, form, validar, preparar = (d) => d, nombre }) {
   const { guardarRegistro, toast, confirmar, registros } = useApp();
@@ -32,18 +33,27 @@ export function useGuardarFormulario({ tipo, form, validar, preparar = (d) => d,
     }
   }, [state, tipo, cargar, navegar]);
 
+  // Datos precargados al llegar (ej. Matriz desde un croquis): se conservan aunque se continúe un borrador
+  const precarga = useRef(state?.nuevo || null).current;
+
   // Borrador automático: uno por registro editado, y uno para "nuevo"
   const borrador = useBorrador({
     clave: `${tipo}:${editando?._id || "nuevo"}`,
     datos: form.datos,
-    cargar,
+    cargar: (b) => cargar(precarga ? { ...b, ...precarga } : b),
     base: editando || form.datos,
     titulo: form.datos.direccion || form.datos.p1 ? `${form.datos.direccion || ""} ${form.datos.p1 ? "· Manzana " + form.datos.p1 : ""}`.trim() : nombre
   });
 
   async function guardar(conPdf) {
     const error = validar?.(form.datos);
-    if (error) return toast(error);
+    if (error) {
+      // error puede ser texto o { texto, campo }: con campo, se lleva al usuario a esa pregunta
+      const { texto, campo } = typeof error === "string" ? { texto: error } : error;
+      toast(texto);
+      if (campo) irACampo(campo);
+      return;
+    }
     setGuardando(true);
     try {
       const registro = await guardarRegistro(

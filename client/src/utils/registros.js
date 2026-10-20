@@ -126,3 +126,4 @@ export function fichaCenso(r) {
 /** Nombre del dispositivo que guarda el registro */
 export const dispositivo = () =>
   /Android/.test(navigator.userAgent) ? "Android" : navigator.platform || "";
+

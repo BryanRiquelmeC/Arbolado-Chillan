@@ -22,7 +22,7 @@ export default function Croquis() {
     tipo: "croquis",
     form,
     nombre: "el croquis",
-    validar: (x) => (!x.direccion?.trim() ? "Complete la dirección" : null),
+    validar: (x) => (!x.direccion?.trim() ? { texto: "Complete la dirección", campo: "direccion" } : null),
     preparar: (x) => ({
       ...x,
       ancho_total: calculo.total.toFixed(2),

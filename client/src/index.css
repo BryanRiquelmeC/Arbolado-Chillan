@@ -81,3 +81,14 @@
 .gira {
   animation: gira 1s linear infinite;
 }
+
+/* Campo obligatorio sin completar: se resalta al intentar guardar */
+@keyframes falta {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(180, 35, 24, 0); }
+  20%, 60% { box-shadow: 0 0 0 4px rgba(180, 35, 24, 0.35); }
+}
+.campo-falta {
+  animation: falta 1.3s ease-in-out 2;
+  outline: 2px solid #b42318;
+  outline-offset: 6px;
+}
