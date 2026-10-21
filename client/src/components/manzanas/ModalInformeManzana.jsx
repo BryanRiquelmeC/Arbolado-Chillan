@@ -51,7 +51,7 @@ export default function ModalInformeManzana({ manzana, registros, acciones, onCe
       </div>
 
       {/* Resumen */}
-      <div className="grid gap-x-8 sm:grid-cols-2">
+      <div className="grid gap-x-8 sm:grid-cols-2 *:min-w-0">
         <div>
           <Bloque titulo="Tipo">
             <div className="flex flex-wrap gap-1.5">
@@ -65,7 +65,7 @@ export default function ModalInformeManzana({ manzana, registros, acciones, onCe
           <Bloque titulo="Urgencia de intervención">
             <div className="flex flex-wrap gap-1.5">
               {contar(registros.map(urgenciaDe)).map(([u, c]) => (
-                <Pastilla key={u} className={claseUrgencia(u)}>
+                <Pastilla key={u} envolver className={claseUrgencia(u)}>
                   {u} · {c}
                 </Pastilla>
               ))}
@@ -75,7 +75,7 @@ export default function ModalInformeManzana({ manzana, registros, acciones, onCe
         <Bloque titulo="Especies">
           <div className="flex flex-wrap gap-1.5">
             {contar(registros.map(especieDe)).map(([e, c]) => (
-              <Pastilla key={e}>
+              <Pastilla key={e} envolver>
                 {e} · {c}
               </Pastilla>
             ))}
