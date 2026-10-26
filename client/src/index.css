@@ -1,7 +1,5 @@
-/* =============================================================
-   Estilos globales · Tailwind CSS v4
-   Colores de la app en @theme (se usan como bg-c1, text-c2, etc.)
-   ============================================================= */
+/* Estilos globales · Tailwind CSS v4
+   Colores de la app en @theme (se usan como bg-c1, text-c2, etc.)*/
 @import "tailwindcss";
 
 @theme {

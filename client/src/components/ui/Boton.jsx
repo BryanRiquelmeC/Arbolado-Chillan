@@ -1,9 +1,4 @@
-/* =============================================================
-   Botón reutilizable
-   variante: primario | secundario | peligro | borrar
-   tamano:   normal | sm
-   icono:    componente de lucide-react (opcional)
-   ============================================================= */
+/* Botón reutilizable*/
 const VARIANTES = {
   primario: "btn-primario",
   secundario: "btn-secundario",

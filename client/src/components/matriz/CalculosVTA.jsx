@@ -1,11 +1,3 @@
-/* =============================================================
-   Cálculos biomecánicos · Guía de campo VTA (Mattheck)
-   Pensado para leerse de un vistazo:
-   · Resumen arriba con los 3 resultados clave (color = riesgo).
-   · 3 pasos con lenguaje simple: Estabilidad · Copa y viento · Tronco.
-   · Lo técnico (q, Cd, brazo) va en "Ajustes" con valores por defecto.
-   La clasificación se sugiere sola; el evaluador puede elegir otra.
-   ============================================================= */
 import { Calculator, Check, Ruler, TreeDeciduous, Wind } from "lucide-react";
 import { Numero } from "../form/Controles.jsx";
 import { irACampo } from "../../utils/irACampo.js";

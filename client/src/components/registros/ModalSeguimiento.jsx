@@ -113,7 +113,7 @@ export default function ModalSeguimiento({ registro, onCerrar, onGuardar }) {
                     setD((v) => ({
                       ...v,
                       resultado: x.valor,
-                      // Si el siguiente paso era el automático (o estaba vacío), se reemplaza por el del nuevo resultado
+                      // si el siguiente paso era el automático (o estaba vacío), se reemplaza por el del nuevo resultado
                       siguiente_paso:
                         !v.siguiente_paso.trim() || v.siguiente_paso === sigueDe(v.resultado) ? x.sigue : v.siguiente_paso
                     }))

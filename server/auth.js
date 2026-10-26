@@ -1,7 +1,5 @@
-/* =============================================================
-   Acceso con contraseña única (sin usuario ni correo)
-   La contraseña vive en .env (APP_CLAVE)
-   ============================================================= */
+/*Acceso con contraseña única (sin usuario ni correo)
+  La contraseña está en .env*/
 import crypto from "node:crypto";
 import { Router } from "express";
 

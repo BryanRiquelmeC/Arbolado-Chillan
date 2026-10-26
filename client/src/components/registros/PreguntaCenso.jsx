@@ -4,7 +4,7 @@
 import Campo from "../form/Campo.jsx";
 import { Chips, Numero, Texto } from "../form/Controles.jsx";
 
-/** "BIO-00 (Sano…): Árbol sin presencia…" → "BIO-00 (Sano…)" */
+/** "BIO-00 (Sano…): Árbol sin presencia…"  "BIO-00 (Sano…)" */
 const corto = (o) => o.split(/:\s/)[0].trim();
 
 export default function PreguntaCenso({ p, d, set }) {

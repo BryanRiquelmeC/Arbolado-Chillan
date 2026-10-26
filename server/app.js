@@ -1,6 +1,4 @@
-/* =============================================================
-   Aplicación Express: middlewares, rutas y manejo de errores
-   ============================================================= */
+/*Aplicación Express: middlewares, rutas y manejo de errores*/
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -28,7 +26,6 @@ app.use("/api/registros", requiereLogin, registros);
 app.use("/api", (req, res) => res.status(404).json({ error: "Ruta no encontrada" }));
 
 /** Manejo central de errores */
-// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (!err.status) console.error("[api]", err);
   res.status(err.status || 500).json({ error: err.message || "Error interno" });

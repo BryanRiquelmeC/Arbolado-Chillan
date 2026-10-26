@@ -2,7 +2,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-/** ← Volver: a la pantalla anterior; si se entró directo, al Panel principal */
+/**  Volver: a la pantalla anterior; si se entró directo, al Panel principal */
 function BotonVolver() {
   const navegar = useNavigate();
   // React Router numera cada pantalla visitada (idx). Si hay una anterior

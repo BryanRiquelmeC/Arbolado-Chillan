@@ -1,10 +1,8 @@
-/* =============================================================
-   Opciones de la Matriz VTA: código en negrita + descripción.
-   · Tocar la opción marcada la desmarca.
-   · "Otros:" es independiente: se puede marcar junto con una opción.
-   · sub: al elegir la opción indicada (ej. "Sí") se despliegan
-     sub-opciones (ej. Domiciliaria / Alumbrado público).
-   ============================================================= */
+/* Opciones de la Matriz VTA: código en negrita + descripción.
+   - Tocar la opción marcada la desmarca.
+   -"Otros:" es independiente: se puede marcar junto con una opción.
+   -sub: al elegir la opción indicada (ej. "Sí") se despliegan
+   -sub-opciones (ej. Domiciliaria / Alumbrado público) */
 import { Chips } from "./Controles.jsx";
 
 /** Separa "BIO-01 (Leve…): descripción" en título y descripción */

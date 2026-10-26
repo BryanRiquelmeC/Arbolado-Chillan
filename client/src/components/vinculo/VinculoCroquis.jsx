@@ -1,9 +1,7 @@
-/* =============================================================
-   Matriz VTA · "Croquis de este árbol" (va justo después de la Manzana)
-   1. Sin manzana  → pide escribirla.
-   2. Con manzana  → tarjetas con los croquis de esa manzana; un toque vincula.
-   3. Vinculado    → resumen del croquis, avisos y acciones (completar / cambiar / quitar).
-   ============================================================= */
+/* Matriz VTA · "Croquis de este árbol" (va justo después de la Manzana)
+   1. Sin manzana pide escribirla.
+   2. Con manzana tarjetas con los croquis de esa manzana; un toque vincula.
+   3. Vinculado resumen del croquis, avisos y acciones (completar / cambiar / quitar).*/
 import { useEffect, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Download, Map, RefreshCw, Search, Unlink } from "lucide-react";
 import Boton from "../ui/Boton.jsx";

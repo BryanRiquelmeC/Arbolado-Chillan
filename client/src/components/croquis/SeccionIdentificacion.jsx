@@ -1,5 +1,4 @@
-/* Croquis · Identificación: dirección (GPS) en una fila; manzana y fecha en otra.
-   Celular: todo en una columna · Tablet y PC: 2 columnas parejas en la segunda fila */
+/* Croquis · Identificación: dirección (GPS) en una fila; manzana y fecha en otra*/
 import { MapPin } from "lucide-react";
 import Tarjeta from "../ui/Tarjeta.jsx";
 import Campo from "../form/Campo.jsx";

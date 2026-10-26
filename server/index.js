@@ -1,8 +1,3 @@
-/* =============================================================
-   Servidor
-   · npm run dev  → API en http://localhost:3007 (Vite en 5173)
-   · npm start    → API + app compilada (client/dist) en un solo puerto
-   ============================================================= */
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";

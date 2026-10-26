@@ -1,9 +1,7 @@
-/* =============================================================
-   Preguntas VTA que se llenan al agregar/editar un árbol del censo.
+/* Preguntas VTA que se llenan al agregar/editar un árbol del censo.
    Se toman de la Matriz VTA (mismas opciones y "Otros:") y se
    guardan en el registro con la misma clave (p5, p7, p9…).
-   Para quitar o agregar una, edite esta lista.
-   ============================================================= */
+   Para quitar o agregar una, editar esta lista.*/
 import { PREGUNTAS } from "./encuesta.js";
 import { respuestaVTA } from "../utils/vta.js";
 

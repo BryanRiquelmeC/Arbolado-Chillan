@@ -1,9 +1,7 @@
-/* =============================================================
-   Seguimiento del trabajo en terreno de cada árbol
+/* Seguimiento del trabajo en terreno de cada árbol
    Se guarda dentro del registro (columna JSONB "datos"):
      estado, resultado, fecha_inicio, fecha_termino,
-     nota_seguimiento, fotos_seguimiento, historial[]
-   ============================================================= */
+     nota_seguimiento, fotos_seguimiento, historial[]*/
 
 export const ESTADOS = {
   pendiente: { nombre: "Pendiente", clase: "bg-[#eef1f4] text-[#4b5b6b]" },

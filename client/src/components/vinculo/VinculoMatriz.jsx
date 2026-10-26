@@ -1,10 +1,7 @@
-/* =============================================================
-   Croquis · "Matriz VTA de este árbol" (al final del croquis)
-   1. Sin guardar → explica los 2 pasos (el botón se activa al guardar).
-   2. Guardado    → botón para evaluar el árbol (Matriz nueva ya vinculada)
-                    o vincular una Matriz que ya existe en la manzana.
-   3. Vinculado   → resumen de la Matriz, avisos y acciones (abrir / quitar).
-   ============================================================= */
+/* Croquis · "Matriz VTA de este árbol" (al final del croquis)
+   1. Sin guardar explica los 2 pasos (el botón se activa al guardar).
+   2. Guardado botón para evaluar el árbol (Matriz nueva ya vinculada)o vincular una Matriz que ya existe en la manzana.
+   3. Vinculado resumen de la Matriz, avisos y acciones (abrir / quitar).*/
 import { useState } from "react";
 import { Check, ClipboardCheck, ClipboardPlus, Lock, Unlink } from "lucide-react";
 import { useNavigate } from "react-router-dom";

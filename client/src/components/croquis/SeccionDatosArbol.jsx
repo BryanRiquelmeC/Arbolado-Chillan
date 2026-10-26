@@ -1,8 +1,7 @@
-/* =============================================================
-   Croquis · Datos del árbol (campos definidos en config/croquis.js)
+/* Croquis · Datos del árbol (campos definidos en config/croquis.js)
    Agrupados en bloques simples: Testigo · Tronco y copa ·
-   Proyección de copa (en cruz, como se mide) · Inclinación · Otras
-   ============================================================= */
+   Proyección de copa (en cruz, como se mide) · Inclinación · Otras*/
+   
 import { TreeDeciduous } from "lucide-react";
 import Tarjeta from "../ui/Tarjeta.jsx";
 import Campo from "../form/Campo.jsx";

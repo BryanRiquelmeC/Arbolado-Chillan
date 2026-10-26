@@ -1,7 +1,5 @@
-/* =============================================================
-   Dirección + botón GPS + coordenadas
-   Guarda en: datos[nombre] (calle y número) y datos[nombre + "_gps"]
-   ============================================================= */
+/* Dirección + botón GPS + coordenadas
+   Guarda en: datos[nombre] (calle y número) y datos[nombre + "_gps"] */
 import { useState } from "react";
 import { LoaderCircle, MapPin } from "lucide-react";
 import { buscarDireccion, leerPosicion } from "../../services/gps.js";

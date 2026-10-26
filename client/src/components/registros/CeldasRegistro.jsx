@@ -68,8 +68,8 @@ export function DetalleBreve({ r, q }) {
       <Resaltar texto={especieDe(r)} q={q} />
       {u && (
         <div className="mt-1">
-          {/* Urgencias escritas a mano ("OTRA: …") pueden ser muy largas: se acortan
-              para no ensanchar la tabla (el texto completo queda al pasar el mouse) */}
+          {/* Urgencias escritas a mano ("OTRA: …") se acortan
+              para no ensanchar mucho la tabla (el texto completo se ve al pasar el mouse) */}
           <span title={u} className="inline-block max-w-full">
             <Pastilla className={`${claseUrgencia(u)} !whitespace-normal break-words`}>
               <Resaltar texto={u.length > 40 ? u.slice(0, 38).trimEnd() + "…" : u} q={q} />

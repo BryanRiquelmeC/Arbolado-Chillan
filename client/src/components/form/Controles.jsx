@@ -1,9 +1,7 @@
-/* =============================================================
-   Controles de formulario reutilizables
-   · Texto, Numero (con unidad), Lista (select)
-   · Chips (opción única o múltiple, se pueden desmarcar)
-   · BotonQuitar (limpia la selección)
-   ============================================================= */
+/* Controles de formulario reutilizables
+   -Texto, Numero (con unidad), Lista (select)
+   -Chips (opción única o múltiple, se pueden desmarcar)
+   -BotonQuitar (limpia la selección)*/
 import { X } from "lucide-react";
 
 export function Texto({ valor, onCambiar, ...props }) {
@@ -58,8 +56,8 @@ export function Lista({ valor, onCambiar, opciones, vacio = "—", ...props }) {
 
 /**
  * Chips de selección.
- * multiple=false → valor texto (tocar de nuevo desmarca)
- * multiple=true  → valor arreglo
+ * multiple=false  valor texto (tocar de nuevo desmarca)
+ * multiple=true  valor arreglo
  */
 export function Chips({ valor, onCambiar, opciones, multiple = false }) {
   const marcado = (o) =>
