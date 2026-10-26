@@ -25,6 +25,11 @@ export function guardarFotos(r, p, lista, set) {
 }
 
 /** ¿Está marcada la casilla "Otros"? (registros antiguos guardaban "Otros" como respuesta) */
+/** Quita el código antiguo de una opción: "BIO-01 (Leve…): desc" → "Leve…: desc" */
+export const sinCodigo = (t) => String(t ?? "").replace(/^[A-Z]{2,5}-\d{2} \((.*?)\)(:|$)/, "$1$2");
+/** ¿La respuesta guardada (con o sin código) corresponde a esta opción? */
+export const mismaOpcion = (guardado, opcion) => Boolean(guardado) && sinCodigo(guardado) === sinCodigo(opcion);
+
 export const otrosMarcado = (r, id) => Boolean(r[id + "_otros"]) || r[id] === "Otros";
 
 /** Texto de una respuesta: opción + sub-opción + "Otros: …" (para detalle, PDF y censo) */
@@ -32,7 +37,7 @@ export function respuestaVTA(r, p) {
   const v = r[p.id];
   const partes = [];
   if (v && v !== "Otros") {
-    let t = String(v);
+    let t = sinCodigo(v);
     if (p.sub) {
       // Pregunta con sub-opciones (Interferencia eléctrica): "Sí (Domiciliaria, Alumbrado público)" o "No"
       t = t.split(":")[0].trim();

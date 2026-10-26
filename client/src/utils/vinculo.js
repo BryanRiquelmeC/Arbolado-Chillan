@@ -5,6 +5,7 @@
    · alertasPunto: avisos cuando croquis y Matriz no coinciden.
    ============================================================= */
 import { categoriaUrgencia } from "./registros.js";
+import { sinCodigo } from "./vta.js";
 
 /** El registro vinculado al que se pasa (croquis → su Matriz, Matriz → su croquis) */
 export function vinculadoDe(r, todos = []) {
@@ -81,9 +82,9 @@ export function alertasPunto(c, m) {
   const alertas = [];
   const extraerCroquis = USOS.some((k) => c[k] === "Extraer árbol");
   const urgencia = categoriaUrgencia(m.p32);
-  const reco = String(m.p38 || "");
-  const sinAccion = ["MONITOREO", "SIN INTERVENCIÓN"].includes(urgencia) || reco.startsWith("CON-01");
-  const extraerMatriz = reco.startsWith("CON-06") || urgencia === "EMERGENCIA (Inmediata)";
+  const reco = sinCodigo(m.p38).toUpperCase(); // acepta respuestas con y sin código
+  const sinAccion = ["MONITOREO", "SIN INTERVENCIÓN"].includes(urgencia) || reco.startsWith("MONITOREO TÉCNICO");
+  const extraerMatriz = reco.startsWith("EXTRACCIÓN INMEDIATA") || urgencia === "EMERGENCIA (Inmediata)";
 
   if (extraerCroquis && sinAccion)
     alertas.push("El croquis proyecta extraer el árbol, pero la Matriz VTA no recomienda intervención.");

@@ -32,6 +32,9 @@ export function categoriaUrgencia(t) {
   const codigo = (u.match(/URG-0([1-5])/) || [])[1];
   if (codigo)
     return ["EMERGENCIA (Inmediata)", "URGENTE (Corto plazo)", "PROGRAMABLE (30-90 días)", "MONITOREO", "SIN INTERVENCIÓN"][codigo - 1];
+  // Sin código: primero Monitoreo y Sin intervención ("Sin Acción Inmediata" no es emergencia)
+  if (/MONITOREO/.test(u)) return "MONITOREO";
+  if (/SIN INTERVENCI/.test(u)) return "SIN INTERVENCIÓN";
   if (/EMERGENCIA|INMEDIATA|URG-01|R-1/.test(u)) return "EMERGENCIA (Inmediata)";
   if (/URGENTE|URG-02|R-2/.test(u)) return "URGENTE (Corto plazo)";
   if (/PROGRAMABLE|30-90|30 A 90|URG-03|R-3/.test(u)) return "PROGRAMABLE (30-90 días)";

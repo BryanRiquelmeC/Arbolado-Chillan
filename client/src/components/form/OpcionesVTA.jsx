@@ -1,13 +1,14 @@
 /* =============================================================
-   Opciones de la Matriz VTA: código en negrita + descripción.
+   Opciones de la Matriz VTA: título en negrita + descripción.
    · Tocar la opción marcada la desmarca.
    · "Otros:" es independiente: se puede marcar junto con una opción.
    · sub: al elegir la opción indicada (ej. "Sí") se despliegan
      sub-opciones (ej. Domiciliaria / Alumbrado público).
    ============================================================= */
 import { Chips } from "./Controles.jsx";
+import { mismaOpcion } from "../../utils/vta.js";
 
-/** Separa "BIO-01 (Leve…): descripción" en título y descripción */
+/** Separa "Leve…: descripción" en título y descripción */
 function partes(o) {
   const m = o.match(/^(.+?\)|[^:]+):\s*(.*)$/);
   return m ? [m[1], m[2]] : [o, ""];
@@ -59,7 +60,7 @@ export default function OpcionesVTA({
     <div className="flex flex-col gap-2.5">
       {opciones.map((o) => {
         const [titulo, desc] = partes(o);
-        const activo = elegida === o;
+        const activo = mismaOpcion(elegida, o); // registros antiguos guardaban la opción con código
         const conSub = sub && activo && o.startsWith(sub.si);
         return (
           <div key={o} className="flex flex-col gap-2">

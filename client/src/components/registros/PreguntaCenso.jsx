@@ -1,10 +1,11 @@
 /* Pregunta VTA en el censo como lista desplegable (compacta para tablet).
    Guarda el mismo texto completo que la Matriz VTA, pero muestra solo
-   el título de la opción: "BIO-00 (Sano / Sin Agente Biótico Visible)". */
+   el título de la opción: "Sano / Sin Agente Biótico Visible". */
 import Campo from "../form/Campo.jsx";
 import { Chips, Numero, Texto } from "../form/Controles.jsx";
+import { mismaOpcion } from "../../utils/vta.js";
 
-/** "BIO-00 (Sano…): Árbol sin presencia…"  "BIO-00 (Sano…)" */
+/** "Sano…: Árbol sin presencia…" → "Sano…" */
 const corto = (o) => o.split(/:\s/)[0].trim();
 
 export default function PreguntaCenso({ p, d, set }) {
@@ -19,12 +20,12 @@ export default function PreguntaCenso({ p, d, set }) {
   }
 
   const opciones = p.opts || [];
-  const elegida = opciones.find((o) => o === d[p.id]);
+  const elegida = opciones.find((o) => mismaOpcion(d[p.id], o)); // acepta respuestas antiguas con código
   return (
     <Campo etiqueta={etiqueta} ancho>
       <select
         className="campo"
-        value={d[p.id] ?? ""}
+        value={elegida ?? d[p.id] ?? ""}
         onChange={(e) => {
           set(p.id, e.target.value);
           if (e.target.value !== "Otros") set(p.id + "_otro", "");
