@@ -33,13 +33,9 @@ const ENCUESTA_COMPLETA = {
         {
           n: "2",
           label: "Estado del Punto de Inspección",
-          opts: [
-            "Árbol Existente en Pie: (El punto cuenta con un ejemplar vivo que debe ser evaluado).",
-            "Sitio Eriazo / Alcorque Vacío: (El punto está libre y requiere análisis de factibilidad y reposición)."
-          ],
-          otros: true,
+          placeholder: "Observación sobre el estado del punto (árbol en pie, alcorque vacío, etc.)…",
           id: "p2",
-          type: "radio"
+          type: "textarea"
         },
         {
           n: "3",

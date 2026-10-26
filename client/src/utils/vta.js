@@ -40,6 +40,7 @@ export function respuestaVTA(r, p) {
     }
     partes.push(t);
   }
+  if (p.obs && r[p.id + "_otro"]) partes.push(`Observación: ${r[p.id + "_otro"]}`);
   if (p.otros && otrosMarcado(r, p.id)) partes.push(r[p.id + "_otro"] ? `Otros: ${r[p.id + "_otro"]}` : "Otros");
   return partes.join("  ·  ");
 }
@@ -74,6 +75,14 @@ const redondear = (n, d = 2) => (n === null ? null : Math.round(n * 10 ** d) / 1
  * Todos los cálculos a partir de lo ingresado.
  * Usa la Altura (p5, m) y el DAP (p7, cm) ya respondidos en la Matriz.
  */
+/** Los 4 testigos de madera sana (uno por orientación) */
+export const TESTIGOS_T = [
+  { campo: "vta_t_n", nombre: "Norte" },
+  { campo: "vta_t_s", nombre: "Sur" },
+  { campo: "vta_t_e", nombre: "Oriente" },
+  { campo: "vta_t_o", nombre: "Poniente" }
+];
+
 export function calculosVTA(d) {
   const H = num(d.p5); // m
   const dapCm = num(d.p7);
@@ -102,7 +111,13 @@ export function calculosVTA(d) {
   const momento = fuerza && brazo ? fuerza * brazo : null; // kg·m
 
   // 4) Pared residual t / R (R por defecto = DAP / 2)
-  const t = num(d.vta_t);
+  // Se miden hasta 4 testigos (N, S, Oriente, Poniente) y se usa el MENOR espesor:
+  // la parte más delgada de la pared es la que decide si el tronco colapsa.
+  const testigos = TESTIGOS_T.map((x) => ({ ...x, valor: num(d[x.campo]) })).filter((x) => x.valor);
+  if (!testigos.length && num(d.vta_t)) testigos.push({ campo: "vta_t", nombre: "Único", valor: num(d.vta_t) }); // registros antiguos
+  const menor = testigos.length ? testigos.reduce((a, b) => (b.valor < a.valor ? b : a)) : null;
+  const t = menor ? menor.valor : null;
+  const tPromedio = testigos.length ? testigos.reduce((a, b) => a + b.valor, 0) / testigos.length : null;
   const R = num(d.vta_r) ?? (dapCm ? dapCm / 2 : null);
   const pared = t && R ? t / R : null;
   const paredSugerida = pared === null ? "" : pared >= 0.33 ? "Seguro" : "Alerta de colapso";
@@ -121,6 +136,9 @@ export function calculosVTA(d) {
     brazoSugerido: redondear(brazoSugerido),
     momento: redondear(momento, 1),
     t, R: redondear(R, 1),
+    testigos,
+    testigoMenor: menor ? menor.nombre : "",
+    tPromedio: redondear(tPromedio, 1),
     pared: redondear(pared),
     paredSugerida,
     paredClase: d.vta_pared_clase || paredSugerida
@@ -147,7 +165,8 @@ export function filasCalculos(r) {
     ["Área de copa (A = alto x ancho x 0,8)", c.area !== null ? fmt(c.area, " m2") : ""],
     ["Fuerza del viento (F = q x A x Cd)", c.fuerza !== null ? `${fmt(c.fuerza, " kg")}  (q ${fmt(c.q)} kg/m2, Cd ${fmt(c.cd)})` : ""],
     ["Momento de flexión (M = F x h)", c.momento !== null ? `${fmt(c.momento, " kg·m")}  (h ${fmt(c.brazo, " m")})` : ""],
-    ["Pared residual (t/R)", c.pared !== null ? `${fmt(c.pared)}  (t ${fmt(c.t, " cm")} / R ${fmt(c.R, " cm")})` : ""],
+    ["Madera sana por testigo (t)", c.testigos.length ? c.testigos.map((x) => `${x.nombre} ${fmt(x.valor, " cm")}`).join(" · ") + (c.testigos.length > 1 ? `  (promedio ${fmt(c.tPromedio, " cm")})` : "") : ""],
+    ["Pared residual (t/R)", c.pared !== null ? `${fmt(c.pared)}  (t menor ${fmt(c.t, " cm")} / R ${fmt(c.R, " cm")})` : ""],
     ["Clasificación pared residual", conCriterio(textoClase(CLASES_PARED, c.paredClase), c.paredClase, c.paredSugerida)]
   ];
   return filas.filter(([, v]) => v);

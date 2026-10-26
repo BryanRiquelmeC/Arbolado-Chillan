@@ -40,6 +40,7 @@ export default function OpcionesVTA({
   nombre,
   opciones,
   otros,
+  obs,
   valor,
   otrosActivo,
   otro,
@@ -91,6 +92,17 @@ export default function OpcionesVTA({
           </div>
         );
       })}
+      {obs && (
+        <label className="flex flex-col gap-1.5 rounded-xl border border-[#cfe3f2] bg-white px-4 py-3">
+          <b className="text-[15px] text-c1">Observación</b>
+          <textarea
+            className="campo min-h-20"
+            placeholder="Escriba una observación sobre el punto (opcional)…"
+            value={otro ?? ""}
+            onChange={(e) => onOtro(e.target.value)}
+          />
+        </label>
+      )}
       {otros && (
         <Opcion
           tipo="checkbox"

@@ -9,7 +9,7 @@
 import { Calculator, Check, Ruler, TreeDeciduous, Wind } from "lucide-react";
 import { Numero } from "../form/Controles.jsx";
 import { irACampo } from "../../utils/irACampo.js";
-import { CLASES_ESBELTEZ, CLASES_PARED, VIENTOS, calculosVTA } from "../../utils/vta.js";
+import { CLASES_ESBELTEZ, CLASES_PARED, TESTIGOS_T, VIENTOS, calculosVTA } from "../../utils/vta.js";
 
 const TONOS = {
   ok: { caja: "border-[#17663a] bg-[#dff3e6] text-[#17663a]", punto: "bg-[#17663a]" },
@@ -240,7 +240,7 @@ export default function CalculosVTA({ d, set }) {
     !c.brazo && { texto: "el brazo (h)", campo: "vta_brazo" }
   ].filter(Boolean);
   const faltaEsbeltez = [!c.H && { texto: "la altura", campo: "p5" }, !c.dapCm && { texto: "el DAP", campo: "p7" }].filter(Boolean);
-  const faltaTronco = [!c.t && { texto: "la madera sana (t)", campo: "vta_t" }, !c.R && { texto: "el DAP o el radio", campo: "p7" }].filter(Boolean);
+  const faltaTronco = [!c.t && { texto: "la madera sana (t) de al menos un testigo", campo: "vta_t_n" }, !c.R && { texto: "el DAP o el radio", campo: "p7" }].filter(Boolean);
 
   return (
     <div className="col-span-full flex flex-col gap-4 rounded-2xl border border-[#cfe3f2] bg-c5 p-4 sm:p-5">
@@ -308,15 +308,38 @@ export default function CalculosVTA({ d, set }) {
 
         {/* 2. Tronco (al lado de Estabilidad: son las dos clasificaciones) */}
         <Paso numero="2" icono={Ruler} titulo="Tronco hueco" pregunta="¿Queda suficiente madera sana en el tronco?">
-          <div className="grid grid-cols-2 gap-2">
-            <Dato etiqueta="Madera sana (t)" ayuda="Espesor de la pared sana" campo="vta_t">
-              {campo("vta_t", "cm")}
-            </Dato>
-            <Dato etiqueta="Radio (R)" ayuda={c.dapCm ? `Si lo deja vacío: DAP/2 = ${fmt(c.dapCm / 2, 1)}` : "Mitad del diámetro"}>
-              {campo("vta_r", "cm", { placeholder: c.dapCm ? String(c.dapCm / 2) : "" })}
-            </Dato>
+          <div className="flex flex-col gap-1">
+            <span className="text-[13px] font-semibold text-[#2b4a63]">Madera sana (t) · 4 testigos</span>
+            <div className="grid grid-cols-2 gap-2">
+              {TESTIGOS_T.map((x) => (
+                <Dato key={x.campo} etiqueta={x.nombre} campo={x.campo}>
+                  {campo(x.campo, "cm")}
+                </Dato>
+              ))}
+            </div>
+            <span className="text-[12px] text-suave">
+              Espesor de la pared sana en cada testigo. Se usa el <b>menor</b>, porque la zona más delgada es la que puede
+              colapsar.
+            </span>
           </div>
-          <Resultado etiqueta="Pared residual" formula="t / R" valor={fmt(c.pared)} />
+          {c.testigos.length > 0 && (
+            <p
+              className={`rounded-xl border px-3 py-2 text-[13px] ${
+                c.testigos.length < 4
+                  ? "border-[#f2d28b] bg-[#fff8e6] text-[#7a5300]"
+                  : "border-[#cfe3f2] bg-c5 text-[#2b4a63]"
+              }`}
+            >
+              {c.testigos.length < 4 && <b>{c.testigos.length} de 4 testigos. </b>}
+              Menor: <b>{fmt(c.t, 1)} cm</b> ({c.testigoMenor})
+              {c.testigos.length > 1 && <> · Promedio: {fmt(c.tPromedio, 1)} cm</>}
+              {c.testigos.length < 4 && " · Para un resultado más objetivo, mida los 4."}
+            </p>
+          )}
+          <Dato etiqueta="Radio (R)" ayuda={c.dapCm ? `Si lo deja vacío: DAP/2 = ${fmt(c.dapCm / 2, 1)}` : "Mitad del diámetro"}>
+            {campo("vta_r", "cm", { placeholder: c.dapCm ? String(c.dapCm / 2) : "" })}
+          </Dato>
+          <Resultado etiqueta="Pared residual" formula="t menor / R" valor={fmt(c.pared)} />
           {faltaTronco.length > 0 && <Faltan items={faltaTronco} />}
           <Regla
             valor={c.pared}
@@ -347,11 +370,11 @@ export default function CalculosVTA({ d, set }) {
                   <span />
                   <Dato etiqueta="Norte" campo="vta_copa_n">{campo("vta_copa_n", "m")}</Dato>
                   <span />
-                  <Dato etiqueta="Oeste" campo="vta_copa_o">{campo("vta_copa_o", "m")}</Dato>
+                  <Dato etiqueta="Poniente" campo="vta_copa_o">{campo("vta_copa_o", "m")}</Dato>
                   <span className="flex justify-center text-c2">
                     <TreeDeciduous size={30} />
                   </span>
-                  <Dato etiqueta="Este" campo="vta_copa_e">{campo("vta_copa_e", "m")}</Dato>
+                  <Dato etiqueta="Oriente" campo="vta_copa_e">{campo("vta_copa_e", "m")}</Dato>
                   <span />
                   <Dato etiqueta="Sur" campo="vta_copa_s">{campo("vta_copa_s", "m")}</Dato>
                   <span />
@@ -362,7 +385,7 @@ export default function CalculosVTA({ d, set }) {
                 <Dato etiqueta="Alto de la copa" ayuda="Desde la primera rama hasta la punta" campo="vta_alto_copa">
                   {campo("vta_alto_copa", "m")}
                 </Dato>
-                <Resultado etiqueta="Ancho promedio de copa" formula="((N+S)+(E+O)) / 2" valor={fmt(c.anchoCopa)} unidad="m" />
+                <Resultado etiqueta="Ancho promedio de copa" formula="((N+S)+(Or+P)) / 2" valor={fmt(c.anchoCopa)} unidad="m" />
                 <Resultado etiqueta="Área de copa" formula="alto × ancho × 0,8" valor={fmt(c.area)} unidad="m²" />
                 <Resultado etiqueta="Empuje del viento" formula="F = q × A × Cd" valor={fmt(c.fuerza, 0)} unidad="kg" />
                 <Resultado etiqueta="Palanca en la base" formula="M = F × h" valor={fmt(c.momento, 0)} unidad="kg·m" />

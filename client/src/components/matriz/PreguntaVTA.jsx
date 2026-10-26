@@ -57,6 +57,7 @@ function Control({ p, d, set }) {
           nombre={p.id}
           opciones={p.opts}
           otros={p.otros}
+          obs={p.obs}
           valor={d[p.id]}
           otrosActivo={otrosMarcado(d, p.id)}
           otro={d[p.id + "_otro"]}
@@ -99,7 +100,7 @@ export default function PreguntaVTA({ p, d, set }) {
       accion={
         conQuitar && (
           <BotonQuitar
-            visible={Boolean(d[p.id]) || otrosMarcado(d, p.id)}
+            visible={Boolean(d[p.id]) || otrosMarcado(d, p.id) || Boolean(p.obs && d[p.id + "_otro"])}
             onClick={() => {
               set(p.id, "");
               set(p.id + "_otro", "");
