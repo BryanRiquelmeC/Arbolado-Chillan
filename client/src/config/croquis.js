@@ -44,7 +44,12 @@ export const ESTADOS_TESTIGO = [
 
 /** Datos del árbol, agrupados para la pantalla (grupo) y en este orden para el PDF */
 export const DATOS_ARBOL = [
-  { id: "testigo_diam", label: "Testigo", unidad: "cm", ej: "6", grupo: "Testigo" },
+  { id: "testigo_n", label: "Testigo Norte", corto: "Norte", unidad: "cm", ej: "6", grupo: "Testigo", cuatro: true },
+  { id: "testigo_s", label: "Testigo Sur", corto: "Sur", unidad: "cm", ej: "6", grupo: "Testigo", cuatro: true },
+  { id: "testigo_e", label: "Testigo Oriente", corto: "Oriente", unidad: "cm", ej: "6", grupo: "Testigo", cuatro: true },
+  { id: "testigo_o", label: "Testigo Poniente", corto: "Poniente", unidad: "cm", ej: "6", grupo: "Testigo", cuatro: true },
+  // Registros antiguos (un solo testigo): no se muestra en pantalla, pero sale en ficha y PDF si tiene dato
+  { id: "testigo_diam", label: "Testigo (registro anterior)", unidad: "cm", grupo: "Testigo", oculto: true },
   { id: "testigo_alt", label: "Testigo – altura medición", unidad: "m", ej: "1.30", grupo: "Testigo" },
   { id: "testigo_estado", label: "Estado del testigo", estados: ESTADOS_TESTIGO, grupo: "Testigo" },
   { id: "dap", label: "DAP", unidad: "cm", ej: "56", grupo: "Tronco y copa" },

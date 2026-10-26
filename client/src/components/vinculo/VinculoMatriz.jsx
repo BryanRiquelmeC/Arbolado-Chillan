@@ -1,7 +1,10 @@
-/* Croquis · "Matriz VTA de este árbol" (al final del croquis)
-   1. Sin guardar explica los 2 pasos (el botón se activa al guardar).
-   2. Guardado botón para evaluar el árbol (Matriz nueva ya vinculada)o vincular una Matriz que ya existe en la manzana.
-   3. Vinculado resumen de la Matriz, avisos y acciones (abrir / quitar).*/
+/* =============================================================
+   Croquis · "Matriz VTA de este árbol" (al final del croquis)
+   1. Sin guardar → explica los 2 pasos (el botón se activa al guardar).
+   2. Guardado    → botón para evaluar el árbol (Matriz nueva ya vinculada)
+                    o vincular una Matriz que ya existe en la manzana.
+   3. Vinculado   → resumen de la Matriz, avisos y acciones (abrir / quitar).
+   ============================================================= */
 import { useState } from "react";
 import { Check, ClipboardCheck, ClipboardPlus, Lock, Unlink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +58,7 @@ export default function VinculoMatriz({ d }) {
   }
 
   return (
-    <Tarjeta icono={ClipboardCheck} titulo="Evaular este árbol con Matriz VTA (opcional)">
+    <Tarjeta icono={ClipboardCheck} titulo="Trabajar con este árbol en Matriz VTA (opcional)">
       <div className="flex flex-col gap-3 rounded-2xl border border-[#cfe3f2] bg-c5 p-4">
         {/* ---------- 3) Ya vinculado ---------- */}
         {matriz ? (
@@ -102,7 +105,7 @@ export default function VinculoMatriz({ d }) {
                   2
                 </span>
                 <span>
-                  <b>Evalúe el árbol:</b> la Matriz VTA se abre ya vinculada, con manzana, dirección, GPS, DAP y copa
+                  <b>Evalúe el árbol:</b> la Matriz VTA se abre ya vinculada, con manzana, dirección, GPS, DAP, copa y testigos
                   completos.
                 </span>
               </li>
@@ -115,7 +118,7 @@ export default function VinculoMatriz({ d }) {
           /* ---------- 2) Guardado, sin Matriz ---------- */
           <>
             <p className="text-[14px] text-[#2b4a63]">
-              Evalúe este árbol con la Matriz VTA. Se abrirá ya vinculada y con manzana, dirección, GPS, DAP y copa
+              Evalúe este árbol con la Matriz VTA. Se abrirá ya vinculada y con manzana, dirección, GPS, DAP, copa y testigos
               completos.
             </p>
             <Boton variante="primario" icono={ClipboardPlus} onClick={nuevaMatriz} className="w-fit">

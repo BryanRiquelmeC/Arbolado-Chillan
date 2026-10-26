@@ -41,7 +41,12 @@ export function datosDesdeCroquis(c) {
     vta_copa_n: c.copa_n, // proyección de copa (m)
     vta_copa_s: c.copa_s,
     vta_copa_e: c.copa_e, // Oriente = Este
-    vta_copa_o: c.copa_o // Poniente = Oeste
+    vta_copa_o: c.copa_o, // Poniente = Oeste
+    // Testigos de madera sana (cm): misma medida en croquis y Matriz
+    vta_t_n: c.testigo_n,
+    vta_t_s: c.testigo_s,
+    vta_t_e: c.testigo_e,
+    vta_t_o: c.testigo_o
   };
   return Object.fromEntries(Object.entries(datos).filter(([, v]) => v !== undefined && v !== null && v !== ""));
 }
@@ -55,7 +60,11 @@ export const NOMBRES_COPIA = {
   vta_copa_n: "Copa Norte",
   vta_copa_s: "Copa Sur",
   vta_copa_e: "Copa Oriente",
-  vta_copa_o: "Copa Poniente"
+  vta_copa_o: "Copa Poniente",
+  vta_t_n: "Testigo Norte",
+  vta_t_s: "Testigo Sur",
+  vta_t_e: "Testigo Oriente",
+  vta_t_o: "Testigo Poniente"
 };
 
 const USOS = ["uso_vereda_izq", "uso_plata_izq", "uso_plata_der", "uso_vereda_der"];
@@ -92,6 +101,18 @@ export function alertasPunto(c, m) {
   const dapM = num(m.p7);
   if (dapC && dapM && Math.abs(dapC - dapM) / Math.max(dapC, dapM) > 0.15)
     alertas.push(`El DAP no coincide: croquis ${dapC} cm y Matriz ${dapM} cm.`);
+
+  // Testigos: deben ser iguales en ambos registros
+  for (const [kc, km, nombre] of [
+    ["testigo_n", "vta_t_n", "Norte"],
+    ["testigo_s", "vta_t_s", "Sur"],
+    ["testigo_e", "vta_t_e", "Oriente"],
+    ["testigo_o", "vta_t_o", "Poniente"]
+  ]) {
+    const tc = num(c[kc]);
+    const tm = num(m[km]);
+    if (tc && tm && tc !== tm) alertas.push(`El testigo ${nombre} no coincide: croquis ${tc} cm y Matriz ${tm} cm.`);
+  }
 
   const campoAncho = ANCHO_UBICACION[c.ubic_arbol];
   const ancho = campoAncho ? num(c[campoAncho]) : null;

@@ -2,6 +2,8 @@
 import { ENCUESTA } from "../../config/encuesta.js";
 import { filasCalculos, fotosDe, respuestaVTA } from "../../utils/vta.js";
 import { ETIQUETAS, GRUPOS } from "../../config/croquis.js";
+import { paredTestigos } from "../../utils/croquis.js";
+import { CSS_TONO, tonoFila } from "../../utils/colores.js";
 import DibujoCroquis from "../croquis/DibujoCroquis.jsx";
 import { fichaCenso, legible } from "../../utils/registros.js";
 import { ICONOS_SECCION } from "../../config/iconos.js";
@@ -53,9 +55,15 @@ export default function DetalleRegistro({ registro: r }) {
             <Seccion>{titulo}</Seccion>
             {ids.map((id) => (
               <Fila key={id} etiqueta={ETIQUETAS[id] || id}>
-                {legible(r[id])}
+                <span className={CSS_TONO[tonoFila(r, { id })] || ""}>{legible(r[id])}</span>
               </Fila>
             ))}
+            {titulo === "Datos del árbol" &&
+              paredTestigos(r)?.filas.map(([k, v]) => (
+                <Fila key={k} etiqueta={k}>
+                  <span className={v.includes("RIESGO") ? "font-bold text-[#b42318]" : v.includes("suficiente") ? "font-bold text-[#17663a]" : ""}>{v}</span>
+                </Fila>
+              ))}
           </div>
         ))}
         {r.fotos?.length > 0 && (
@@ -150,7 +158,7 @@ export default function DetalleRegistro({ registro: r }) {
         if (p.type === "calculos") {
           return filasCalculos(r).map(([k, val]) => (
             <Fila key={k} etiqueta={k}>
-              {val}
+              <span className={CSS_TONO[tonoFila(r, { etiqueta: k })] || ""}>{val}</span>
             </Fila>
           ));
         }
@@ -158,8 +166,10 @@ export default function DetalleRegistro({ registro: r }) {
         if (p.type === "gps" && r[p.id + "_gps"]) v = `${v || ""} · GPS: ${r[p.id + "_gps"]}`;
         return (
           <Fila key={p.id} etiqueta={`${p.n ? p.n + ". " : ""}${p.label}`}>
-            {legible(v)}
-            {v && p.unit ? ` ${p.unit}` : ""}
+            <span className={CSS_TONO[tonoFila(r, { id: p.id })] || ""}>
+              {legible(v)}
+              {v && p.unit ? ` ${p.unit}` : ""}
+            </span>
           </Fila>
         );
       })}

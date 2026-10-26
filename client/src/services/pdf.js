@@ -2,14 +2,15 @@ import { respuestasCensoVta } from "../config/censoVta.js";
 import { estadoDe, nombreEstado, pasoSiguiente, siguienteDe, terminado } from "../config/seguimiento.js";
 /* =============================================================
    Reportes PDF
-   · pdfRegistro(r)   croquis, Matriz VTA o censo (según tipo)
-   · pdfManzana(m, l) informe resumen de una manzana
+   · pdfRegistro(r)   → croquis, Matriz VTA o censo (según tipo)
+   · pdfManzana(m, l) → informe resumen de una manzana
    ============================================================= */
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
 import { ENCUESTA } from "../config/encuesta.js";
 import { ETIQUETAS, GRUPOS } from "../config/croquis.js";
-import { croquisPng } from "../utils/croquis.js";
+import { croquisPng, paredTestigos } from "../utils/croquis.js";
+import { PDF_TONO, tonoFila, tonoUrgencia } from "../utils/colores.js";
 import { Importar } from "./importar.js";
 import { filasCalculos, fotosDe, respuestaVTA } from "../utils/vta.js";
 import { alertasPunto, puntoDe } from "../utils/vinculo.js";
@@ -124,6 +125,15 @@ function tabla(doc, y, cabecera, cuerpo, extra = {}) {
     ...extra
   });
   return doc.lastAutoTable.finalY + 6;
+}
+
+/** Pinta la celda según el tono de riesgo (verde / amarillo / rojo) */
+function pintar(c, tono) {
+  const t = PDF_TONO[tono];
+  if (!t) return;
+  c.cell.styles.textColor = t.texto;
+  c.cell.styles.fillColor = t.fondo;
+  c.cell.styles.fontStyle = "bold";
 }
 
 const columnaClave = {
@@ -288,7 +298,20 @@ async function cuerpoCroquis(doc, W, r, y) {
   for (const [titulo, ids] of GRUPOS) {
     // ancho_total se calcula solo: "0.00" significa que no se ingresaron anchos
     const filas = ids.filter((id) => lleno(r[id]) && !(id === "ancho_total" && !parseFloat(r[id]))).map((id) => [ETIQUETAS[id] || id, legible(r[id])]);
-    if (filas.length) y = tabla(doc, y, [titulo, ""], filas, columnaClave);
+    // Datos del árbol: se agrega el resultado de los testigos (rojo si es riesgoso)
+    const pt = titulo === "Datos del árbol" ? paredTestigos(r) : null;
+    if (pt) filas.push(...pt.filas);
+    if (filas.length)
+      y = tabla(doc, y, [titulo, ""], filas, {
+        ...columnaClave,
+        didParseCell: (c) => {
+          if (c.section !== "body") return;
+          const etiqueta = String(filas[c.row.index]?.[0] || "");
+          // Pared residual (última fila) y estado del testigo
+          if (pt?.pared != null && c.row.index === filas.length - 1) pintar(c, pt.riesgo ? "peligro" : "ok");
+          else if (etiqueta === ETIQUETAS.testigo_estado) pintar(c, tonoFila(r, { id: "testigo_estado" }));
+        }
+      });
   }
   return y;
 }
@@ -311,12 +334,22 @@ function cuerpoEncuesta(doc, W, r, y) {
   };
   // Solo lo respondido: se omiten preguntas vacías y secciones sin datos
   for (const s of ENCUESTA.secciones) {
-    const cuerpo = s.preguntas
+    const filas = s.preguntas
       .flatMap((p) =>
-        p.type === "vinculo" ? [] : p.type === "calculos" ? filasCalculos(r) : [[`${p.label}${p.unit ? ` (${p.unit})` : ""}`, valor(p)]]
+        p.type === "vinculo"
+          ? []
+          : p.type === "calculos"
+            ? filasCalculos(r).map(([k, v]) => [k, v, ""])
+            : [[`${p.label}${p.unit ? ` (${p.unit})` : ""}`, valor(p), p.id]]
       )
       .filter(([, v]) => v);
-    if (cuerpo.length) y = tabla(doc, y, [s.titulo, ""], cuerpo, columnaClave);
+    const tonos = filas.map(([k, , id]) => tonoFila(r, { id, etiqueta: k }));
+    const cuerpo = filas.map(([k, v]) => [k, v]);
+    if (cuerpo.length)
+      y = tabla(doc, y, [s.titulo, ""], cuerpo, {
+        ...columnaClave,
+        didParseCell: (c) => c.section === "body" && pintar(c, tonos[c.row.index])
+      });
   }
   return { y, fotos };
 }
@@ -482,7 +515,9 @@ export async function pdfManzana(manzana, registros) {
     ]),
     {
       styles: { fontSize: 8, cellPadding: 1.8, lineColor: [207, 227, 242] },
-      columnStyles: { 0: { cellWidth: 12, halign: "center" }, 2: { cellWidth: 22 } }
+      columnStyles: { 0: { cellWidth: 12, halign: "center" }, 2: { cellWidth: 22 } },
+      // Urgencia en verde / amarillo / rojo
+      didParseCell: (c) => c.section === "body" && c.column.index === 4 && pintar(c, tonoUrgencia(urgenciaDe(lista[c.row.index])))
     }
   );
   cerrar(doc, W, `informe_manzana_${Importar.slug(String(manzana))}.pdf`);

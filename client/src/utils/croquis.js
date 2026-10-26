@@ -123,3 +123,29 @@ export async function croquisPng(d) {
   g.drawImage(img, 0, 0, c.width, c.height);
   return c.toDataURL("image/png");
 }
+
+/* ---------- Testigos del croquis: pared residual (criterio Mattheck) ---------- */
+const nTest = (v) => {
+  const n = parseFloat(String(v ?? "").replace(",", "."));
+  return n > 0 ? n : null;
+};
+const ORIENT_TEST = [["testigo_n", "Norte"], ["testigo_s", "Sur"], ["testigo_e", "Oriente"], ["testigo_o", "Poniente"]];
+const f2 = (n, d = 1) => n.toLocaleString("es-CL", { maximumFractionDigits: d });
+
+/** Menor testigo / (DAP/2). Riesgo si < 0,33. Devuelve null si no hay testigos. */
+export function paredTestigos(r) {
+  const medidos = ORIENT_TEST.map(([id, nombre]) => ({ nombre, v: nTest(r[id]) })).filter((x) => x.v);
+  if (!medidos.length) return null;
+  const menor = medidos.reduce((a, b) => (b.v < a.v ? b : a));
+  const promedio = medidos.reduce((a, b) => a + b.v, 0) / medidos.length;
+  const radio = nTest(r.dap) ? nTest(r.dap) / 2 : null;
+  const pared = radio ? menor.v / radio : null;
+  const riesgo = pared !== null && pared < 0.33;
+  const filas = [["Testigo menor", `${f2(menor.v)} cm (${menor.nombre})${medidos.length > 1 ? ` · promedio ${f2(promedio)} cm` : ""}`]];
+  if (pared !== null)
+    filas.push([
+      "Pared residual (menor / radio)",
+      `${f2(pared, 2)} · ${riesgo ? "RIESGO DE COLAPSO POR CAVIDAD (menor a 0,33)" : "Pared suficiente (0,33 o más)"}`
+    ]);
+  return { medidos, menor, promedio, radio, pared, riesgo, filas };
+}

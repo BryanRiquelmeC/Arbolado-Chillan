@@ -1,7 +1,9 @@
-/* Censo Arbolado Urbano 2026 - Matriz VTA
+/* =============================================================
+   Censo Arbolado Urbano 2026 - Matriz VTA
    Configuración de secciones y preguntas del formulario.
-   Tipos: text, number, radio, select, gps, photo, textarea
-   "otros: true" agrega la opción "Otros:" con texto libre.*/
+   Tipos: text · number · radio · select · gps · photo · textarea
+   "otros: true" agrega la opción "Otros:" con texto libre.
+   ============================================================= */
 const ENCUESTA_COMPLETA = {
   titulo: "Censo Arbolado Urbano 2026 - Matriz VTA",
   intro:
@@ -643,9 +645,13 @@ const ENCUESTA_COMPLETA = {
   ]
 };
 
-/* VERSIÓN CORTA DE LA MATRIZ
-   Preguntas que NO se muestran*/
-
+/* =============================================================
+   VERSIÓN CORTA DE LA MATRIZ
+   Preguntas que NO se muestran (quedan 20 de 41: solo las que
+   determinan el riesgo y la decisión sobre el árbol).
+   Para volver a mostrar una, bórrela de esta lista.
+   Los registros antiguos conservan sus respuestas.
+   ============================================================= */
 export const PREGUNTAS_OCULTAS = [
   // Medidas que no cambian la decisión
   "p6", "p6a", "p6b", "p6c", "p6d", "p6e",
