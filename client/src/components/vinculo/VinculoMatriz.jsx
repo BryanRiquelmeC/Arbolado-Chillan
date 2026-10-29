@@ -105,7 +105,7 @@ export default function VinculoMatriz({ d }) {
                   2
                 </span>
                 <span>
-                  <b>Evalúe el árbol:</b> la Matriz VTA se abre ya vinculada, con manzana, dirección, GPS, DAP, copa y testigos
+                  <b>Evalúe el árbol:</b> la Matriz VTA se abre ya vinculada, con manzana, dirección, GPS, DAP, copa, testigos y red eléctrica
                   completos.
                 </span>
               </li>
@@ -118,7 +118,7 @@ export default function VinculoMatriz({ d }) {
           /* ---------- 2) Guardado, sin Matriz ---------- */
           <>
             <p className="text-[14px] text-[#2b4a63]">
-              Evalúe este árbol con la Matriz VTA. Se abrirá ya vinculada y con manzana, dirección, GPS, DAP, copa y testigos
+              Evalúe este árbol con la Matriz VTA. Se abrirá ya vinculada y con manzana, dirección, GPS, DAP, copa, testigos y red eléctrica
               completos.
             </p>
             <Boton variante="primario" icono={ClipboardPlus} onClick={nuevaMatriz} className="w-fit">

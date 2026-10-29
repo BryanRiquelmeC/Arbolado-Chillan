@@ -202,6 +202,18 @@ const ENCUESTA_COMPLETA = {
           type: "radio"
         },
         {
+          n: "11b",
+          label: "Condición del Verticelo",
+          opts: [
+            "Bueno: Ramas del verticelo bien insertadas y equilibradas, sin heridas, pudrición ni grietas en la zona de unión.",
+            "Regular: Defectos leves; heridas menores, ramas secas pequeñas o leve desequilibrio, sin compromiso estructural.",
+            "Malo: Pudrición, grietas, corteza incluida o ramas desgajadas en el verticelo; riesgo de desprendimiento."
+          ],
+          otros: true,
+          id: "p11b",
+          type: "radio"
+        },
+        {
           n: "12",
           label: "Oquedad en Tronco",
           opts: [

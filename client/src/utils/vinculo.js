@@ -6,6 +6,7 @@
    ============================================================= */
 import { categoriaUrgencia } from "./registros.js";
 import { sinCodigo } from "./vta.js";
+import { PREGUNTAS } from "../config/encuesta.js";
 
 /** El registro vinculado al que se pasa (croquis → su Matriz, Matriz → su croquis) */
 export function vinculadoDe(r, todos = []) {
@@ -47,9 +48,25 @@ export function datosDesdeCroquis(c) {
     vta_t_n: c.testigo_n,
     vta_t_s: c.testigo_s,
     vta_t_e: c.testigo_e,
-    vta_t_o: c.testigo_o
+    vta_t_o: c.testigo_o,
+    // Red eléctrica: "Sí" (con tipo de red) o "No"
+    ...redDesdeCroquis(c)
   };
   return Object.fromEntries(Object.entries(datos).filter(([, v]) => v !== undefined && v !== null && v !== ""));
+}
+
+/** Cables del croquis → Interferencia eléctrica (p25) y tipo de red (p25_tipo) de la Matriz */
+function redDesdeCroquis(c) {
+  const p25 = PREGUNTAS.find((p) => p.id === "p25");
+  if (!p25 || !["Sí", "No"].includes(c.cables)) return {};
+  const opcion = p25.opts.find((o) => o.startsWith(c.cables + ":"));
+  const tipos = (c.tipo_red || []).filter((t) => p25.sub.opciones.includes(t));
+  return {
+    p25: opcion,
+    ...(c.cables === "Sí" && tipos.length
+      ? { [p25.sub.campo]: p25.sub.opciones.filter((t) => tipos.includes(t)).join(", ") }
+      : {})
+  };
 }
 
 /** Nombres legibles de lo que se copia (para el aviso) */
@@ -65,7 +82,9 @@ export const NOMBRES_COPIA = {
   vta_t_n: "Testigo Norte",
   vta_t_s: "Testigo Sur",
   vta_t_e: "Testigo Oriente",
-  vta_t_o: "Testigo Poniente"
+  vta_t_o: "Testigo Poniente",
+  p25: "Interferencia eléctrica",
+  p25_tipo: "Tipo de red"
 };
 
 const USOS = ["uso_vereda_izq", "uso_plata_izq", "uso_plata_der", "uso_vereda_der"];

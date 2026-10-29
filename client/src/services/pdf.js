@@ -317,7 +317,7 @@ async function cuerpoCroquis(doc, W, r, y) {
 }
 
 /** Matriz VTA: tablas por sección. Devuelve { y, fotos } */
-function cuerpoEncuesta(doc, W, r, y) {
+function cuerpoEncuesta(doc, W, r, y, omitir = []) {
   const fotos = [];
   const valor = (p) => {
     let v = r[p.id];
@@ -338,7 +338,9 @@ function cuerpoEncuesta(doc, W, r, y) {
       .flatMap((p) =>
         p.type === "vinculo"
           ? []
-          : p.type === "calculos"
+          : omitir.includes(p.id)
+            ? []
+            : p.type === "calculos"
             ? filasCalculos(r).map(([k, v]) => [k, v, ""])
             : [[`${p.label}${p.unit ? ` (${p.unit})` : ""}`, valor(p), p.id]]
       )
@@ -384,7 +386,8 @@ async function pdfPunto(c, m) {
   // 2) Matriz VTA (en hoja nueva)
   doc.addPage();
   y = banda(doc, W, 20, "2. EVALUACIÓN DEL ÁRBOL · MATRIZ VTA");
-  const res = cuerpoEncuesta(doc, W, m, y);
+  // La red eléctrica ya sale en el croquis: no se repite en la Matriz (si el croquis la registró)
+  const res = cuerpoEncuesta(doc, W, m, y, c.cables ? ["p25"] : []);
   y = res.y;
   // 3) Coincidencia entre ambos
   const alertas = alertasPunto(c, m);

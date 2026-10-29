@@ -240,7 +240,7 @@ export default function CalculosVTA({ d, set }) {
     !c.brazo && { texto: "el brazo (h)", campo: "vta_brazo" }
   ].filter(Boolean);
   const faltaEsbeltez = [!c.H && { texto: "la altura", campo: "p5" }, !c.dapCm && { texto: "el DAP", campo: "p7" }].filter(Boolean);
-  const faltaTronco = [!c.t && { texto: "la madera sana (t) de al menos un testigo", campo: "vta_t_n" }, !c.R && { texto: "el DAP o el radio", campo: "p7" }].filter(Boolean);
+  const faltaTronco = [!c.t && { texto: "la madera sana (t) de al menos un testigo", campo: "vta_t_n" }, !c.R && { texto: "el DAP", campo: "p7" }].filter(Boolean);
 
   return (
     <div className="col-span-full flex flex-col gap-4 rounded-2xl border border-[#cfe3f2] bg-c5 p-4 sm:p-5">
@@ -336,9 +336,8 @@ export default function CalculosVTA({ d, set }) {
               {c.testigos.length < 4 && " · Para un resultado más objetivo, mida los 4."}
             </p>
           )}
-          <Dato etiqueta="Radio (R)" ayuda={c.dapCm ? `Si lo deja vacío: DAP/2 = ${fmt(c.dapCm / 2, 1)}` : "Mitad del diámetro"}>
-            {campo("vta_r", "cm", { placeholder: c.dapCm ? String(c.dapCm / 2) : "" })}
-          </Dato>
+          {/* El radio se calcula solo con el DAP de arriba */}
+          <Resultado etiqueta="Radio (R)" formula="DAP / 2 · se calcula solo" valor={fmt(c.R, 1)} unidad="cm" />
           <Resultado etiqueta="Pared residual" formula="t menor / R" valor={fmt(c.pared)} />
           {faltaTronco.length > 0 && <Faltan items={faltaTronco} />}
           <Regla
@@ -382,7 +381,7 @@ export default function CalculosVTA({ d, set }) {
               </div>
 
               <div className="flex flex-col gap-3">
-                <Dato etiqueta="Alto de la copa" ayuda="Desde la primera rama hasta la punta" campo="vta_alto_copa">
+                <Dato etiqueta="Alto de la copa" ayuda="Desde el cuello hasta el primer verticelo" campo="vta_alto_copa">
                   {campo("vta_alto_copa", "m")}
                 </Dato>
                 <Resultado etiqueta="Ancho promedio de copa" formula="((N+S)+(Or+P)) / 2" valor={fmt(c.anchoCopa)} unidad="m" />
@@ -456,8 +455,8 @@ export default function CalculosVTA({ d, set }) {
                 etiqueta="Brazo (h)"
                 ayuda={
                   c.brazoSugerido !== null
-                    ? `Del cuello a la mitad de la copa. Calculado: ${fmt(c.brazoSugerido)} m (altura − alto de copa/2)`
-                    : "Del cuello a la mitad de la copa"
+                    ? `Desde la base del cuello a la mitad de la copa. Calculado: ${fmt(c.brazoSugerido)} m (altura − alto de copa/2)`
+                    : "Desde la base del cuello a la mitad de la copa"
                 }
                campo="vta_brazo">
                 {campo("vta_brazo", "m", { placeholder: c.brazoSugerido !== null ? String(c.brazoSugerido) : "" })}

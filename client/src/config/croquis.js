@@ -22,6 +22,8 @@ export const UBICACIONES_ARBOL = [
   "Vereda der."
 ];
 export const ORIENTACIONES = ["N", "S", "O", "P", "NO", "NP", "SO", "SP"];
+/** Tipo de red eléctrica (mismas opciones que la Matriz VTA) */
+export const TIPOS_RED = ["Domiciliaria", "Alumbrado público"];
 export const FLUJOS = ["O a P", "P a O", "N a S", "S a N"];
 export const LADOS_POSTE = ["Platabanda izq.", "Platabanda der."];
 
@@ -74,6 +76,7 @@ export const ETIQUETAS = {
   km_inicial: "Km inicial",
   registro: "N° registro",
   cables: "Cables eléctricos aéreos",
+  tipo_red: "Tipo de red",
   postes: "Postes / red ubicados en",
   altura_cables_izq: "Altura mín. cables lado izq. (m)",
   altura_cables_der: "Altura mín. cables lado der. (m)",
@@ -118,6 +121,7 @@ export const GRUPOS = [
     "Red eléctrica y tránsito",
     [
       "cables",
+      "tipo_red",
       "postes",
       "altura_cables_izq",
       "altura_cables_der",
